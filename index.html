@@ -1,1 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Studio da Adri</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f7f1f4;color:#30252c;font-family:Arial,sans-serif}
+header{background:#382632;color:white;text-align:center;padding:30px 15px}
+header h1{margin:0;font-size:28px}
+main{max-width:500px;margin:25px auto;padding:22px;background:white;border-radius:16px}
+h2{text-align:center}
+label{display:block;margin-top:16px;font-weight:bold}
+input,select,textarea{width:100%;padding:13px;margin-top:7px;border:1px solid #ccc;border-radius:8px;font-size:16px}
+button{width:100%;padding:15px;margin-top:22px;background:#70445d;color:white;border:0;border-radius:9px;font-size:17px}
+button:disabled{opacity:.5}
+#mensagem{text-align:center;margin-top:16px}
+footer{text-align:center;padding:20px;color:#665}
+</style>
+</head>
+<body>
+<header>
+<h1>Studio da Adri</h1>
+<p>Beleza e cuidado com você</p>
+</header>
 
+<main>
+<h2>Agende seu horário</h2>
+
+<form id="formulario">
+<label>Seu nome</label>
+<input id="nome" required maxlength="100">
+
+<label>Seu WhatsApp</label>
+<input id="telefone" type="tel" required maxlength="20">
+
+<label>Serviço desejado</label>
+<select id="servico" required>
+<option value="">Carregando serviços...</option>
+</select>
+
+<label>Data</label>
+<input id="data" type="date" required>
+
+<label>Horário</label>
+<select id="horario" required>
+<option value="">Escolha a data primeiro</option>
+</select>
+
+<label>Observações (opcional)</label>
+<textarea id="observacoes" rows="3" maxlength="500"></textarea>
+
+<button id="enviar" type="submit">Solicitar agendamento</button>
+</form>
+<div id="mensagem"></div>
+</main>
+
+<footer>Atendimento mediante agendamento.</footer>
+
+<script>
+const SUPABASE_URL = "https://kydxzvqjeiadknojlesv.supabase.co";
+const SUPABASE_ANON_KEY = "COLOQUE_SUA_CHAVE_PUBLICA_AQUI";
+const WHATSAPP = "5546988103646";
+
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+const servico = document.getElementById("servico");
+const data = document.getElementById("data");
+const horario = document.getElementById("horario");
+const mensagem = document.getElementById("mensagem");
+
+const hoje = new Date();
+const dataLocal = [
+  hoje.getFullYear(),
+  String(hoje.getMonth()+1).padStart(2,"0"),
+  String(hoje.getDate()).padStart(2,"0")
+].join("-");
+data.min = dataLocal;
+
+async function carregarServicos(){
+  const {data:lista,error} = await db
+    .from("services")
+    .select("id,name")
+    .eq("is_active",true)
+    .order("name");
+
+  if(error){
+    mensagem.textContent = "Erro ao carregar serviços.";
+    return;
+  }
+
+  servico.innerHTML = '<option value="">Selecione um serviço</option>';
+
+  lista.forEach(item=>{
+    const op=document.createElement("option");
+    op.value=item.id;
+    op.textContent=item.name;
+    servico.appendChild(op);
+  });
+}
+
+function carregarHorarios(){
+  horario.innerHTML='<option value="">Selecione um horário</option>';
+
+  if(!data.value) return;
+
+  const dia=new Date(data.value+"T12:00:00").getDay();
+
+  if(dia===0){
+    horario.innerHTML='<option value="">Fechado aos domingos</option>';
+    return;
+  }
+
+  const abertura=dia===6?8*60:8*60+30;
+  const fechamento=dia===6?16*60:19*60;
+
+  for(let minutos=abertura;minutos<fechamento;minutos+=30){
+    const h=String(Math.floor(minutos/60)).padStart(2,"0");
+    const m=String(minutos%60).padStart(2,"0");
+    const op=document.createElement("option");
+    op.value=h+":"+m;
+    op.textContent=h+":"+m;
+    horario.appendChild(op);
+  }
+}
+
+data.addEventListener("change",carregarHorarios);
+
+document.getElementById("formulario").addEventListener("submit",async e=>{
+  e.preventDefault();
+
+  const botao=document.getElementById("enviar");
+  botao.disabled=true;
+  mensagem.textContent="Enviando solicitação...";
+
+  const nome=document.getElementById("nome").value.trim();
+  const telefone=document.getElementById("telefone").value.trim();
+
+  const {data:registro,error}=await db
+    .from("bookings")
+    .insert({
+      client_name:nome,
+      client_phone:telefone,
+      service_id:servico.value,
+      appointment_date:data.value,
+      appointment_time:horario.value,
+      notes:document.getElementById("observacoes").value.trim(),
+      status:"pending"
+    })
+    .select("id")
+    .single();
+
+  botao.disabled=false;
+
+  if(error){
+    mensagem.textContent="Não foi possível solicitar esse horário. Tente outro.";
+    return;
+  }
+
+  mensagem.textContent="Solicitação registrada!";
+
+  const texto=encodeURIComponent(
+    "Olá! Fiz uma solicitação de agendamento no Studio da Adri."+
+    "\nNome: "+nome+
+    "\nTelefone: "+telefone+
+    "\nData: "+data.value+
+    "\nHorário: "+horario.value+
+    "\nCódigo: "+registro.id
+  );
+
+  const link=document.createElement("a");
+  link.href="https://wa.me/"+WHATSAPP+"?text="+texto;
+  link.target="_blank";
+  link.rel="noopener";
+  link.textContent="Enviar mensagem pelo WhatsApp";
+  link.style.display="block";
+  link.style.marginTop="18px";
+  mensagem.appendChild(link);
+});
+
+carregarServicos();
+</script>
+</body>
+</html>
