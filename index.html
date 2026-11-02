@@ -1,186 +1,198 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"> 
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Studio da Adri</title>
+<title>Estúdio da Adri</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#f7f1f4;color:#30252c;font-family:Arial,sans-serif}
-header{background:#382632;color:white;text-align:center;padding:30px 15px}
-header h1{margin:0;font-size:28px}
-main{max-width:500px;margin:25px auto;padding:22px;background:white;border-radius:16px}
+corpo{margem:0;fundo:#f7f1f4;cor:#30252c;família da fonte:Arial,sans-serif}
+cabeçalho{fundo:#382632;cor:branco;alinhamento-texto:centro;preenchimento:30px 15px}
+cabeçalho h1{margem:0;tamanho da fonte:28px}
+main{largura máxima:500px;margem:25px auto;preenchimento:22px;fundo:branco;raio da borda:16px}
 h2{text-align:center}
 label{display:block;margin-top:16px;font-weight:bold}
 input,select,textarea{width:100%;padding:13px;margin-top:7px;border:1px solid #ccc;border-radius:8px;font-size:16px}
-button{width:100%;padding:15px;margin-top:22px;background:#70445d;color:white;border:0;border-radius:9px;font-size:17px}
-button:disabled{opacity:.5}
+botão{largura:100%;preenchimento:15px;margem-superior:22px;fundo:#70445d;cor:branco;borda:0;raio-da-borda:9px;tamanho-da-fonte:17px}
+botão:desativado{opacidade:0,5}
 #mensagem{text-align:center;margin-top:16px}
-footer{text-align:center;padding:20px;color:#665}
+rodapé{texto alinhado:centro;preenchimento:20px;cor:#665}
 </style>
 </head>
 <body>
 <header>
-<h1>Studio da Adri</h1>
+<h1>Estúdio da Adri</h1>
 <p>Beleza e cuidado com você</p>
 </header>
 
-<main>
+<principal>
 <h2>Agende seu horário</h2>
 
 <form id="formulario">
-<label>Seu nome</label>
-<input id="nome" required maxlength="100">
+<label for="nome">Seu nome</label>
+<input id="nome" required maxlength="100" autocomplete="nome">
 
-<label>Seu WhatsApp</label>
-<input id="telefone" type="tel" required maxlength="20">
+<label for="telefone">Seu WhatsApp</label>
+<input id="telefone" type="tel" required maxlength="20" autocomplete="tel">
 
-<label>Serviço desejado</label>
+<label for="servico">Serviço desejado</label>
 <select id="servico" required>
 <option value="">Carregando serviços...</option>
 </select>
 
-<label>Data</label>
+<label for="data">Dados</label>
 <input id="data" type="date" required>
 
-<label>Horário</label>
+<label for="horario">Horário</label>
 <select id="horario" required>
-<option value="">Escolha a data primeiro</option>
+<option value="">Escolha os dados primeiro</option>
 </select>
 
-<label>Observações (opcional)</label>
+<label for="observacoes">Observações (opcional)</label>
 <textarea id="observacoes" rows="3" maxlength="500"></textarea>
 
 <button id="enviar" type="submit">Solicitar agendamento</button>
-</form>
-<div id="mensagem"></div>
+</formulário>
+<div id="mensagem" role="status" aria-live="polite"></div>
 </main>
 
 <footer>Atendimento mediante agendamento.</footer>
 
 <script>
 const SUPABASE_URL = "https://kydxzvqjeiadknojlesv.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_Mhg5z2RJ-Vuoc3wqbGyFfA_FODUKIhw";
+const SUPABASE_ANON_KEY = "sb_publishable_Mhg5z2RJ-Vuoc3wqbGyFfA_FODUKIhw";
 const WHATSAPP = "5546988103646";
 
-const db = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const servico = document.getElementById("servico");
+const formulario = document.getElementById("formulario");
+const serviço = document.getElementById("servico");
 const data = document.getElementById("data");
-const horario = document.getElementById("horario");
+const horário = document.getElementById("horario");
 const mensagem = document.getElementById("mensagem");
+const botão = document.getElementById("enviar");
 
-const hoje = new Date();
-const dataLocal = [
-  hoje.getFullYear(),
-  String(hoje.getMonth()+1).padStart(2,"0"),
-  String(hoje.getDate()).padStart(2,"0")
-].join("-");
-data.min = dataLocal;
+função dataHojeLocal(){
+  const hoje = new Date();
+  retornar [
+    hoje.getFullYear(),
+    String(hoje.getMonth()+1).padStart(2,"0"),
+    String(hoje.getDate()).padStart(2,"0")
+  ].juntar("-");
+}
+dados.min = dataHojeLocal();
 
-async function carregarServicos(){
+função assíncrona carregarServiços(){
   const {data:lista,error} = await db
-    .from("services")
+    .de("serviços")
     .select("id,name")
     .eq("is_active",true)
-    .order("name");
+    .order("nome");
 
-  if(error){
-    mensagem.textContent = "Erro ao carregar serviços.";
-    return;
+  se(erro){
+    mensagem.textContent = "Não foi possível carregar os serviços. Atualize a página.";
+    servico.innerHTML = '<option value="">Serviços indisponíveis</option>';
+    retornar;
   }
 
-  servico.innerHTML = '<option value="">Selecione um serviço</option>';
-
-  lista.forEach(item=>{
-    const op=document.createElement("option");
-    op.value=item.id;
-    op.textContent=item.name;
-    servico.appendChild(op);
+  servico.innerHTML = '<option value="">Selecionar um serviço</option>';
+  (lista || []).forEach(item=>{
+    const opcao = document.createElement("option");
+    opcao.value = item.id;
+    opcao.textContent = item.nome;
+    servico.appendChild(opcao);
   });
-}
 
-function carregarHorarios(){
-  horario.innerHTML='<option value="">Selecione um horário</option>';
-
-  if(!data.value) return;
-
-  const dia=new Date(data.value+"T12:00:00").getDay();
-
-  if(dia===0){
-    horario.innerHTML='<option value="">Fechado aos domingos</option>';
-    return;
-  }
-
-  const abertura=dia===6?8*60:8*60+30;
-  const fechamento=dia===6?16*60:19*60;
-
-  for(let minutos=abertura;minutos<fechamento;minutos+=30){
-    const h=String(Math.floor(minutos/60)).padStart(2,"0");
-    const m=String(minutos%60).padStart(2,"0");
-    const op=document.createElement("option");
-    op.value=h+":"+m;
-    op.textContent=h+":"+m;
-    horario.appendChild(op);
+  if(!lista || lista.length === 0){
+    servico.innerHTML = '<option value="">Nenhum serviço disponível</option>';
   }
 }
 
+função carregarHorários(){
+  horario.innerHTML = '<option value="">Selecionar um horário</option>';
+  Se (!data.value) retornar;
+
+  const dia = new Date(data.value + "T12:00:00").getDay();
+
+  se(dia === 0){
+    horario.innerHTML = '<option value="">Fechado aos domingos</option>';
+    retornar;
+  }
+
+  const abertura = dia === 6 ? 8*60 : 8*60+30;
+  const fechamento = dia === 6 ? 16*60 : 19*60;
+
+  for(let minutos=abertura; minutos<fechamento; minutos+=30){
+    const h = String(Math.floor(minutos/60)).padStart(2,"0");
+    const m = String(minutos%60).padStart(2,"0");
+    const opcao = document.createElement("option");
+    opcao.value = h + ":" + m;
+    opcao.textContent = h + ":" + m;
+    horario.appendChild(opcao);
+  }
+}
 data.addEventListener("change",carregarHorarios);
 
-document.getElementById("formulario").addEventListener("submit",async e=>{
+formulario.addEventListener("submit",async e=>{
   e.preventDefault();
 
-  const botao=document.getElementById("enviar");
-  botao.disabled=true;
-  mensagem.textContent="Enviando solicitação...";
+  if(!formulario.reportValidity()) return;
 
-  const nome=document.getElementById("nome").value.trim();
-  const telefone=document.getElementById("telefone").value.trim();
+  botao.disabled = true;
+  mensagem.textContent = "Enviando solicitação...";
 
-  const {data:registro,error}=await db
-    .from("bookings")
-    .insert({
-      client_name:nome,
-      client_phone:telefone,
-      service_id:servico.value,
-      appointment_date:data.value,
-      appointment_time:horario.value,
-      notes:document.getElementById("observacoes").value.trim(),
-      status:"pending"
-    })
-    .select("id")
-    .single();
+  const nome = document.getElementById("nome").value.trim();
+  const telefone = document.getElementById("telefone").value.trim();
 
-  botao.disabled=false;
+  tentar{
+    const {error} = await db
+      .from("reservas")
+      .inserir({
+        nome_do_cliente: nome,
+        telefone_do_cliente: telefone,
+        service_id: servico.value,
+        data_do_compromisso: data.valor,
+        horário_do_compartilhamento: valor_do_horário,
+        notas: document.getElementById("observacoes").value.trim(),
+        status: "pendente"
+      });
 
-  if(error){
-    mensagem.textContent="Não foi possível solicitar esse horário. Tente outro.";
-    return;
+    se(erro){
+      console.error("Erro ao agendamento do registrador:",error);
+      mensagem.textContent = "Não foi possível solicitar esse horário. Ele pode estar ocupado. Tente outro.";
+      botao.disabled = false;
+      retornar;
+    }
+
+    mensagem.textContent = "Solicitação registrada! Para avisar o Studio, toque no botão abaixo.";
+
+    const texto = encodeURIComponent(
+      "Olá! Fiz uma solicitação de agendamento no Studio da Adri." +
+      "\nNome: " + nome +
+      "\nTelefone: " + telefone +
+      "\nServiço: " + servico.options[servico.selectedIndex].text +
+      "\nDados: " + data.value +
+      "\nHorário: " + horario.value
+    );
+
+    const link = document.createElement("a");
+    link.href = "https://wa.me/" + WHATSAPP + "?text=" + texto;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "Enviar mensagem pelo WhatsApp";
+    link.style.display = "bloco";
+    link.style.marginTop = "18px";
+    mensagem.appendChild(link);
+    formulario.reset();
+    dados.min = dataHojeLocal();
+    horario.innerHTML = '<option value="">Escolher os dados primeiro</option>';
+  }catch(erro){
+    console.error("Falha inesperada:",erro);
+    mensagem.textContent = "Ocorreu um erro de conexão. Verifique a internet e tente novamente.";
+  }finalmente{
+    botao.disabled = false;
   }
-
-  mensagem.textContent="Solicitação registrada!";
-
-  const texto=encodeURIComponent(
-    "Olá! Fiz uma solicitação de agendamento no Studio da Adri."+
-    "\nNome: "+nome+
-    "\nTelefone: "+telefone+
-    "\nData: "+data.value+
-    "\nHorário: "+horario.value+
-    "\nCódigo: "+registro.id
-  );
-
-  const link=document.createElement("a");
-  link.href="https://wa.me/"+WHATSAPP+"?text="+texto;
-  link.target="_blank";
-  link.rel="noopener";
-  link.textContent="Enviar mensagem pelo WhatsApp";
-  link.style.display="block";
-  link.style.marginTop="18px";
-  mensagem.appendChild(link);
 });
 
 carregarServicos();
