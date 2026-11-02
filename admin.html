@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -24,6 +25,7 @@
       background: white;
       padding: 24px;
       border-radius: 16px;
+      box-shadow: 0 4px 15px #00000010;
     }
 
     h1, h2 { text-align: center; }
@@ -49,11 +51,15 @@
       font-size: 15px;
     }
 
-    button:disabled { opacity: .5; }
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
 
     .cancelar { background: #a33b3b; }
     .sair { background: #555; }
     .atualizar { background: #a17b35; }
+    .whatsapp { background: #218838; }
 
     .agendamento {
       border: 1px solid #e2d7dd;
@@ -80,6 +86,14 @@
       display: flex;
       flex-wrap: wrap;
       gap: 5px;
+      margin-top: 12px;
+    }
+
+    .topo {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
     }
   </style>
 </head>
@@ -115,13 +129,19 @@
   </section>
 
   <section id="painel">
-    <button class="sair" id="botaoSair">Sair</button>
-    <button class="atualizar" id="botaoAtualizar">
-      Atualizar agendamentos
-    </button>
+
+    <div class="topo">
+      <button class="sair" id="botaoSair">Sair</button>
+
+      <button class="atualizar" id="botaoAtualizar">
+        Atualizar agendamentos
+      </button>
+    </div>
 
     <h2>Agendamentos</h2>
+
     <div id="lista"></div>
+
   </section>
 
   <div id="mensagem" role="status" aria-live="polite"></div>
@@ -154,6 +174,45 @@ function mostrarPainel() {
   painel.style.display = "block";
 }
 
+// Formata a data para o padrão brasileiro
+function formatarData(data) {
+  if (!data) return "Não informada";
+
+  const partes = data.split("-");
+  return partes.length === 3
+    ? partes[2] + "/" + partes[1] + "/" + partes[0]
+    : data;
+}
+
+// Abre o WhatsApp do cliente
+function abrirWhatsApp(item) {
+  let telefone = String(item.client_phone || "")
+    .replace(/\D/g, "");
+
+  if (!telefone) {
+    mensagem.textContent = "Telefone não informado.";
+    return;
+  }
+
+  if (!telefone.startsWith("55")) {
+    telefone = "55" + telefone;
+  }
+
+  const nome = item.client_name || "cliente";
+
+  const texto =
+    "Olá, " + nome +
+    "! Aqui é do Studio da Adri. " +
+    "Estou entrando em contato sobre seu agendamento.";
+
+  const link =
+    "https://wa.me/" + telefone +
+    "?text=" + encodeURIComponent(texto);
+
+  window.open(link, "_blank", "noopener,noreferrer");
+}
+
+// Carrega os agendamentos
 async function carregarAgendamentos() {
   lista.textContent = "Carregando agendamentos...";
   mensagem.textContent = "";
@@ -189,6 +248,7 @@ async function carregarAgendamentos() {
   }
 
   data.forEach(item => {
+
     const card = document.createElement("article");
     card.className = "agendamento";
 
@@ -199,10 +259,9 @@ async function carregarAgendamentos() {
     const informacoes = [
       "Telefone: " + (item.client_phone || "Não informado"),
       "Serviço: " + (item.services?.name || "Não informado"),
-      "Data: " + item.appointment_date,
-      "Horário: " + String(item.appointment_time).slice(0, 5),
-      "Observações: " + (item.notes || "Nenhuma"),
-      "Status: " + item.status
+      "Data: " + formatarData(item.appointment_date),
+      "Horário: " + String(item.appointment_time || "").slice(0, 5),
+      "Observações: " + (item.notes || "Nenhuma")
     ];
 
     informacoes.forEach(texto => {
@@ -214,26 +273,47 @@ async function carregarAgendamentos() {
     const status = document.createElement("p");
     status.className = "status";
     status.textContent =
-      "Situação: " + item.status.toUpperCase();
+      "Situação: " + String(item.status).toUpperCase();
+
     card.appendChild(status);
 
     const acoes = document.createElement("div");
     acoes.className = "acoes";
 
+    // Botão WhatsApp
+    if (item.client_phone) {
+      const whatsapp = document.createElement("button");
+
+      whatsapp.textContent = "Conversar pelo WhatsApp";
+      whatsapp.className = "whatsapp";
+
+      whatsapp.onclick = () => abrirWhatsApp(item);
+
+      acoes.appendChild(whatsapp);
+    }
+
+    // Botão confirmar
     if (item.status === "pending") {
       const confirmar = document.createElement("button");
+
       confirmar.textContent = "Confirmar";
+
       confirmar.onclick = () =>
         alterarStatus(item.id, "confirmed", confirmar);
+
       acoes.appendChild(confirmar);
     }
 
+    // Botão cancelar
     if (item.status !== "cancelled") {
       const cancelar = document.createElement("button");
+
       cancelar.textContent = "Cancelar";
       cancelar.className = "cancelar";
+
       cancelar.onclick = () =>
         alterarStatus(item.id, "cancelled", cancelar);
+
       acoes.appendChild(cancelar);
     }
 
@@ -242,7 +322,9 @@ async function carregarAgendamentos() {
   });
 }
 
+// Altera o status do agendamento
 async function alterarStatus(id, novoStatus, botao) {
+
   const confirmacao = novoStatus === "confirmed"
     ? "Confirma este agendamento?"
     : "Deseja cancelar este agendamento?";
@@ -258,24 +340,32 @@ async function alterarStatus(id, novoStatus, botao) {
 
   if (error) {
     console.error(error);
+
     mensagem.textContent =
       "Não foi possível atualizar o agendamento.";
+
     botao.disabled = false;
     return;
   }
 
   mensagem.textContent = "Agendamento atualizado!";
+
   await carregarAgendamentos();
 }
 
+// Login
 document.getElementById("formLogin")
   .addEventListener("submit", async event => {
+
     event.preventDefault();
 
     mensagem.textContent = "Verificando acesso...";
 
-    const email = document.getElementById("email").value.trim();
-    const senha = document.getElementById("senha").value;
+    const email =
+      document.getElementById("email").value.trim();
+
+    const senha =
+      document.getElementById("senha").value;
 
     const { error } = await db.auth.signInWithPassword({
       email,
@@ -291,7 +381,9 @@ document.getElementById("formLogin")
     await verificarAcesso();
   });
 
+// Verifica se o usuário é administrador
 async function verificarAcesso() {
+
   const { data } = await db.auth.getSession();
 
   if (!data.session) {
@@ -306,30 +398,43 @@ async function verificarAcesso() {
     .maybeSingle();
 
   if (error || !administrador) {
+
     await db.auth.signOut();
+
     mostrarLogin();
+
     mensagem.textContent =
       "Esta conta não tem autorização de administrador.";
+
     return;
   }
 
   mostrarPainel();
+
   await carregarAgendamentos();
 }
 
+// Sair
 document.getElementById("botaoSair").onclick =
   async () => {
+
     await db.auth.signOut();
+
     lista.innerHTML = "";
+
     mostrarLogin();
+
     mensagem.textContent = "Você saiu do painel.";
   };
 
+// Atualizar
 document.getElementById("botaoAtualizar").onclick =
   carregarAgendamentos;
 
+// Inicialização
 verificarAcesso();
 </script>
 
 </body>
 </html>
+
