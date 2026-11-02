@@ -4,75 +4,172 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Studio da Adri</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f7f1f4;color:#30252c;font-family:Arial,sans-serif}
-header{background:#382632;color:white;text-align:center;padding:30px 15px}
-header h1{margin:0;font-size:28px}
-main{max-width:500px;margin:25px auto;padding:22px;background:white;border-radius:16px}
-h2{text-align:center}
-label{display:block;margin-top:16px;font-weight:bold}
-input,select,textarea{width:100%;padding:13px;margin-top:7px;border:1px solid #ccc;border-radius:8px;font-size:16px}
-button{width:100%;padding:15px;margin-top:22px;background:#70445d;color:white;border:0;border-radius:9px;font-size:17px}
-button:disabled{opacity:.5}
-#mensagem{text-align:center;margin-top:16px}
-footer{text-align:center;padding:20px;color:#665}
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f7f1f4;
+  color: #30252c;
+  font-family: Arial, sans-serif;
+}
+
+#inicio {
+  background: #100d0b;
+  color: #d6b36a;
+  text-align: center;
+  padding: 35px 20px;
+}
+
+#inicio img {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  display: block;
+  margin: 0 auto 20px;
+}
+
+#inicio h1 {
+  margin: 10px 0;
+}
+
+#inicio p {
+  margin-bottom: 20px;
+}
+
+main {
+  max-width: 500px;
+  margin: 25px auto;
+  padding: 22px;
+  background: white;
+  border-radius: 16px;
+}
+
+h2 {
+  text-align: center;
+}
+
+label {
+  display: block;
+  margin-top: 16px;
+  font-weight: bold;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 13px;
+  margin-top: 7px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 22px;
+  background: #70445d;
+  color: white;
+  border: 0;
+  border-radius: 9px;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .5;
+}
+
+#inicio button {
+  background: #d6b36a;
+  color: #100d0b;
+  font-weight: bold;
+}
+
+#mensagem {
+  text-align: center;
+  margin-top: 16px;
+}
+
+#mensagem a {
+  color: #176b36;
+  font-weight: bold;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #665;
+}
 </style>
 </head>
+
 <body>
-<section id="inicio" style="background:#100d0b;color:#d6b36a;text-align:center;padding:35px 20px;">
-<img src="logo-studio-da-adri.jpg" alt="Logo Studio da Adri" style="width:100%;max-width:320px;height:auto;display:block;margin:0 auto 20px;">
-<h1>Studio da Adri</h1>
-<p>Beleza e cuidado com você</p>
-<button type="button" onclick="document.getElementById('formulario').scrollIntoView({behavior:'smooth'})">
+
+<section id="inicio">
+  <img src="logo-studio-da-adri.jpg" alt="Logo Studio da Adri">
+  <h1>Studio da Adri</h1>
+  <p>Beleza e cuidado com você</p>
+
+  <button type="button" onclick="document.getElementById('formulario').scrollIntoView({behavior:'smooth'})">
     AGENDAR HORÁRIO
-</button>
+  </button>
 </section>
-<header>
-<h1>Studio da Adri</h1>
-<p>Beleza e cuidado com você</p>
-</header>
 
 <main>
-<h2>Agende seu horário</h2>
+  <h2>Agende seu horário</h2>
 
-<form id="formulario">
-<label for="nome">Seu nome</label>
-<input id="nome" required maxlength="100" autocomplete="name">
+  <form id="formulario">
 
-<label for="telefone">Seu WhatsApp</label>
-<input id="telefone" type="tel" required maxlength="20" autocomplete="tel">
+    <label for="nome">Seu nome</label>
+    <input id="nome" required maxlength="100" autocomplete="name">
 
-<label for="servico">Serviço desejado</label>
-<select id="servico" required>
-<option value="">Carregando serviços...</option>
-</select>
+    <label for="telefone">Seu WhatsApp</label>
+    <input id="telefone" type="tel" required maxlength="20" autocomplete="tel">
 
-<label for="data">Data</label>
-<input id="data" type="date" required>
+    <label for="servico">Serviço desejado</label>
+    <select id="servico" required>
+      <option value="">Carregando serviços...</option>
+    </select>
 
-<label for="horario">Horário</label>
-<select id="horario" required>
-<option value="">Escolha a data primeiro</option>
-</select>
+    <label for="data">Data</label>
+    <input id="data" type="date" required>
 
-<label for="observacoes">Observações (opcional)</label>
-<textarea id="observacoes" rows="3" maxlength="500"></textarea>
+    <label for="horario">Horário</label>
+    <select id="horario" required>
+      <option value="">Escolha a data primeiro</option>
+    </select>
 
-<button id="enviar" type="submit">Solicitar agendamento</button>
-</form>
-<div id="mensagem" role="status" aria-live="polite"></div>
+    <label for="observacoes">Observações (opcional)</label>
+    <textarea id="observacoes" rows="3" maxlength="500"></textarea>
+
+    <button id="enviar" type="submit">
+      Solicitar agendamento
+    </button>
+
+  </form>
+
+  <div id="mensagem" role="status" aria-live="polite"></div>
 </main>
 
-<footer>Atendimento mediante agendamento.</footer>
+<footer>
+  Atendimento mediante agendamento.
+</footer>
 
 <script>
 const SUPABASE_URL = "https://kydxzvqjeiadknojlesv.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Mhg5z2RJ-Vuoc3wqbGyFfA_FODUKIhw";
 const WHATSAPP = "5546988103646";
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
 const formulario = document.getElementById("formulario");
 const servico = document.getElementById("servico");
@@ -81,71 +178,133 @@ const horario = document.getElementById("horario");
 const mensagem = document.getElementById("mensagem");
 const botao = document.getElementById("enviar");
 
-function dataHojeLocal(){
-  const hoje = new Date();
+function dataLocal(dia) {
   return [
-    hoje.getFullYear(),
-    String(hoje.getMonth()+1).padStart(2,"0"),
-    String(hoje.getDate()).padStart(2,"0")
+    dia.getFullYear(),
+    String(dia.getMonth() + 1).padStart(2, "0"),
+    String(dia.getDate()).padStart(2, "0")
   ].join("-");
 }
-data.min = dataHojeLocal();
 
-async function carregarServicos(){
-  const {data:lista,error} = await db
+function configurarLimiteDatas() {
+  const hoje = new Date();
+  const limite = new Date();
+
+  limite.setDate(limite.getDate() + 7);
+
+  data.min = dataLocal(hoje);
+  data.max = dataLocal(limite);
+}
+
+configurarLimiteDatas();
+
+async function carregarServicos() {
+  const { data: lista, error } = await db
     .from("services")
     .select("id,name")
-    .eq("is_active",true)
+    .eq("is_active", true)
     .order("name");
 
-  if(error){
-    mensagem.textContent = "Não foi possível carregar os serviços. Atualize a página.";
-    servico.innerHTML = '<option value="">Serviços indisponíveis</option>';
+  if (error) {
+    console.error(error);
+    mensagem.textContent =
+      "Não foi possível carregar os serviços. Atualize a página.";
+
+    servico.innerHTML =
+      '<option value="">Serviços indisponíveis</option>';
     return;
   }
 
-  servico.innerHTML = '<option value="">Selecione um serviço</option>';
-  (lista || []).forEach(item=>{
+  servico.innerHTML =
+    '<option value="">Selecione um serviço</option>';
+
+  (lista || []).forEach(item => {
     const opcao = document.createElement("option");
     opcao.value = item.id;
     opcao.textContent = item.name;
     servico.appendChild(opcao);
   });
 
-  if(!lista || lista.length === 0){
-    servico.innerHTML = '<option value="">Nenhum serviço disponível</option>';
+  if (!lista || lista.length === 0) {
+    servico.innerHTML =
+      '<option value="">Nenhum serviço disponível</option>';
   }
 }
 
-function carregarHorarios(){
-  horario.innerHTML = '<option value="">Selecione um horário</option>';
-  if(!data.value) return;
+async function carregarHorarios() {
+  horario.innerHTML =
+    '<option value="">Carregando horários...</option>';
 
-  const dia = new Date(data.value + "T12:00:00").getDay();
-
-  if(dia === 0){
-    horario.innerHTML = '<option value="">Fechado aos domingos</option>';
+  if (!data.value) {
+    horario.innerHTML =
+      '<option value="">Escolha a data primeiro</option>';
     return;
   }
 
-  const abertura = dia === 6 ? 8*60 : 8*60+30;
-  const fechamento = dia === 6 ? 16*60 : 19*60;
+  const dia = new Date(data.value + "T12:00:00").getDay();
 
-  for(let minutos=abertura; minutos<fechamento; minutos+=30){
-    const h = String(Math.floor(minutos/60)).padStart(2,"0");
-    const m = String(minutos%60).padStart(2,"0");
+  if (dia === 0) {
+    horario.innerHTML =
+      '<option value="">Fechado aos domingos</option>';
+    return;
+  }
+
+  const { data: ocupados, error } =
+    await db.rpc("get_public_booked_slots");
+
+  if (error) {
+    console.error("Erro ao consultar horários:", error);
+
+    horario.innerHTML =
+      '<option value="">Não foi possível consultar horários</option>';
+    return;
+  }
+
+  const ocupadosNoDia = (ocupados || [])
+    .filter(item => item.appointment_date === data.value)
+    .map(item => String(item.appointment_time).slice(0, 5));
+
+  const abertura = dia === 6 ? 8 * 60 : 8 * 60 + 30;
+  const fechamento = dia === 6 ? 16 * 60 : 19 * 60;
+
+  horario.innerHTML =
+    '<option value="">Selecione um horário</option>';
+
+  let livres = 0;
+
+  for (
+    let minutos = abertura;
+    minutos < fechamento;
+    minutos += 30
+  ) {
+    const h = String(Math.floor(minutos / 60)).padStart(2, "0");
+    const m = String(minutos % 60).padStart(2, "0");
+    const valor = h + ":" + m;
+
+    if (ocupadosNoDia.includes(valor)) {
+      continue;
+    }
+
     const opcao = document.createElement("option");
-    opcao.value = h + ":" + m;
-    opcao.textContent = h + ":" + m;
+    opcao.value = valor;
+    opcao.textContent = valor;
+
     horario.appendChild(opcao);
+    livres++;
+  }
+
+  if (livres === 0) {
+    horario.innerHTML =
+      '<option value="">Não há horários livres nesta data</option>';
   }
 }
-data.addEventListener("change",carregarHorarios);
 
-formulario.addEventListener("submit",async e=>{
+data.addEventListener("change", carregarHorarios);
+
+formulario.addEventListener("submit", async e => {
   e.preventDefault();
 
-  if(!formulario.reportValidity()) return;
+  if (!formulario.reportValidity()) return;
 
   botao.disabled = true;
   mensagem.textContent = "Enviando solicitação...";
@@ -153,8 +312,8 @@ formulario.addEventListener("submit",async e=>{
   const nome = document.getElementById("nome").value.trim();
   const telefone = document.getElementById("telefone").value.trim();
 
-  try{
-    const {error} = await db
+  try {
+    const { error } = await db
       .from("bookings")
       .insert({
         client_name: nome,
@@ -166,14 +325,17 @@ formulario.addEventListener("submit",async e=>{
         status: "pending"
       });
 
-    if(error){
-      console.error("Erro ao registrar agendamento:",error);
-      mensagem.textContent = "Não foi possível solicitar esse horário. Ele pode estar ocupado. Tente outro.";
-      botao.disabled = false;
+    if (error) {
+      console.error("Erro ao registrar agendamento:", error);
+
+      mensagem.textContent =
+        "Não foi possível solicitar esse horário. Ele pode estar ocupado. Tente outro.";
+
       return;
     }
 
-    mensagem.textContent = "Solicitação registrada! Para avisar o Studio, toque no botão abaixo.";
+    mensagem.textContent =
+      "Solicitação registrada! Para avisar o Studio, toque no botão abaixo.";
 
     const texto = encodeURIComponent(
       "Olá! Fiz uma solicitação de agendamento no Studio da Adri." +
@@ -185,25 +347,35 @@ formulario.addEventListener("submit",async e=>{
     );
 
     const link = document.createElement("a");
+
     link.href = "https://wa.me/" + WHATSAPP + "?text=" + texto;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.textContent = "Enviar mensagem pelo WhatsApp";
     link.style.display = "block";
     link.style.marginTop = "18px";
+
     mensagem.appendChild(link);
+
     formulario.reset();
-    data.min = dataHojeLocal();
-    horario.innerHTML = '<option value="">Escolha a data primeiro</option>';
-  }catch(erro){
-    console.error("Falha inesperada:",erro);
-    mensagem.textContent = "Ocorreu um erro de conexão. Verifique a internet e tente novamente.";
-  }finally{
+    configurarLimiteDatas();
+
+    horario.innerHTML =
+      '<option value="">Escolha a data primeiro</option>';
+
+  } catch (erro) {
+    console.error("Falha inesperada:", erro);
+
+    mensagem.textContent =
+      "Ocorreu um erro de conexão. Verifique a internet e tente novamente.";
+
+  } finally {
     botao.disabled = false;
   }
 });
 
 carregarServicos();
 </script>
+
 </body>
 </html>
