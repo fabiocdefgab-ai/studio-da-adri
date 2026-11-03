@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -214,6 +215,7 @@ function formatarData(data) {
     : data;
 }
 
+// WHATSAPP COM MENSAGEM PERSONALIZADA
 function abrirWhatsApp(item) {
   let telefone = String(item.client_phone || "")
     .replace(/\D/g, "");
@@ -228,11 +230,15 @@ function abrirWhatsApp(item) {
   }
 
   const nome = item.client_name || "cliente";
+  const servico = item.services?.name || "serviço";
+  const data = formatarData(item.appointment_date);
+  const horario = String(item.appointment_time || "").slice(0, 5);
 
   const texto =
-    "Olá, " + nome +
-    "! Aqui é do Studio da Adri. " +
-    "Estou entrando em contato sobre seu agendamento.";
+    "Olá, " + nome + "! Aqui é do Studio da Adri. " +
+    "Estou entrando em contato sobre seu agendamento: " +
+    servico + ", marcado para " + data +
+    " às " + horario + ". Podemos conversar?";
 
   const link =
     "https://wa.me/" + telefone +
@@ -330,7 +336,6 @@ function mostrarAgendamentos() {
     const acoes = document.createElement("div");
     acoes.className = "acoes";
 
-    // WhatsApp
     if (item.client_phone) {
       const whatsapp = document.createElement("button");
 
@@ -341,7 +346,6 @@ function mostrarAgendamentos() {
       acoes.appendChild(whatsapp);
     }
 
-    // Confirmar
     if (item.status === "pending") {
       const confirmar = document.createElement("button");
 
@@ -353,7 +357,6 @@ function mostrarAgendamentos() {
       acoes.appendChild(confirmar);
     }
 
-    // Cancelar
     if (item.status !== "cancelled") {
       const cancelar = document.createElement("button");
 
@@ -472,10 +475,8 @@ document.getElementById("botaoSair").onclick =
 document.getElementById("botaoAtualizar").onclick =
   carregarAgendamentos;
 
-// Filtrar pela data escolhida
 filtroData.addEventListener("change", mostrarAgendamentos);
 
-// Limpar filtro e mostrar todos
 document.getElementById("limparFiltro").onclick = () => {
   filtroData.value = "";
   mostrarAgendamentos();
