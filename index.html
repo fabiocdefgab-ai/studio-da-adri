@@ -1,18 +1,16 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#080808">
-
 <title>Barbearia do Gaúcho</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -44,10 +42,7 @@ header h1 {
   letter-spacing: 1px;
 }
 
-header p {
-  color: #d6b36a;
-  margin: 8px 0 0;
-}
+header p { color: #d6b36a; }
 
 main {
   max-width: 520px;
@@ -71,9 +66,7 @@ label {
   color: #e5c77f;
 }
 
-input,
-select,
-textarea {
+input, select, textarea {
   width: 100%;
   padding: 14px;
   margin-top: 7px;
@@ -84,9 +77,7 @@ textarea {
   font-size: 16px;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
+input:focus, select:focus, textarea:focus {
   outline: 2px solid #d6b36a;
   border-color: #d6b36a;
 }
@@ -104,12 +95,8 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  background: #edcf8a;
-}
-
 button:disabled {
-  opacity: 0.5;
+  opacity: .5;
   cursor: not-allowed;
 }
 
@@ -139,14 +126,8 @@ footer {
 }
 
 @media (max-width: 600px) {
-  main {
-    margin: 18px 12px;
-    padding: 20px;
-  }
-
-  header h1 {
-    font-size: 25px;
-  }
+  main { margin: 18px 12px; padding: 20px; }
+  header h1 { font-size: 25px; }
 }
 </style>
 </head>
@@ -159,7 +140,6 @@ footer {
     src="logo-barbearia-do-gaucho.jpg"
     alt="Logotipo da Barbearia do Gaúcho"
   >
-
   <h1>Barbearia do Gaúcho</h1>
   <p>Tradição e qualidade desde 1998</p>
 </header>
@@ -170,24 +150,12 @@ footer {
   <form id="formulario">
 
     <label for="nome">Seu nome</label>
-    <input
-      id="nome"
-      type="text"
-      required
-      maxlength="100"
-      autocomplete="name"
-      placeholder="Digite seu nome"
-    >
+    <input id="nome" type="text" required maxlength="100"
+      autocomplete="name" placeholder="Digite seu nome">
 
     <label for="telefone">Seu WhatsApp</label>
-    <input
-      id="telefone"
-      type="tel"
-      required
-      maxlength="20"
-      autocomplete="tel"
-      placeholder="(00) 00000-0000"
-    >
+    <input id="telefone" type="tel" required maxlength="20"
+      autocomplete="tel" placeholder="(00) 00000-0000">
 
     <label for="servico">Serviço desejado</label>
     <select id="servico" required>
@@ -203,38 +171,25 @@ footer {
     </select>
 
     <label for="observacoes">Observações (opcional)</label>
-    <textarea
-      id="observacoes"
-      rows="3"
-      maxlength="500"
-      placeholder="Alguma observação?"
-    ></textarea>
+    <textarea id="observacoes" rows="3" maxlength="500"
+      placeholder="Alguma observação?"></textarea>
 
     <button id="enviar" type="submit">
       Solicitar agendamento
     </button>
-
   </form>
 
-  <div
-    id="mensagem"
-    role="status"
-    aria-live="polite"
-  ></div>
+  <div id="mensagem" role="status" aria-live="polite"></div>
 </main>
 
 <footer>
-  © 2026 Barbearia do Gaúcho
-  <br>
-  Tradição, estilo e qualidade desde 1998.
-  <br>
+  © 2026 Barbearia do Gaúcho<br>
+  Tradição, estilo e qualidade desde 1998.<br>
   Atendimento mediante agendamento.
 </footer>
 
 <script>
-
-// CONFIGURAÇÃO DO SUPABASE
-// Mantivemos o banco de dados do projeto anterior.
+// CONFIGURAÇÕES DO SISTEMA
 
 const SUPABASE_URL =
   "https://kydxzvqjeiadknojlesv.supabase.co";
@@ -242,15 +197,13 @@ const SUPABASE_URL =
 const SUPABASE_ANON_KEY =
   "sb_publishable_Mhg5z2RJ-Vuoc3wqbGyFfA_FODUKIhw";
 
-// WhatsApp já utilizado no projeto
-const WHATSAPP = "5546988103646";
+// WHATSAPP CORRETO DO PROPRIETÁRIO
+const WHATSAPP = "5546999815786";
 
 const db = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 );
-
-// ELEMENTOS DA PÁGINA
 
 const formulario = document.getElementById("formulario");
 const servico = document.getElementById("servico");
@@ -258,8 +211,6 @@ const data = document.getElementById("data");
 const horario = document.getElementById("horario");
 const mensagem = document.getElementById("mensagem");
 const botao = document.getElementById("enviar");
-
-// DATA ATUAL
 
 function dataHojeLocal() {
   const hoje = new Date();
@@ -273,9 +224,11 @@ function dataHojeLocal() {
 
 data.min = dataHojeLocal();
 
-// CARREGAR SERVIÇOS DO BANCO DE DADOS
+// CARREGAR SERVIÇOS
 
 async function carregarServicos() {
+  servico.innerHTML =
+    '<option value="">Carregando serviços...</option>';
 
   const { data: lista, error } = await db
     .from("services")
@@ -285,13 +238,10 @@ async function carregarServicos() {
 
   if (error) {
     console.error(error);
-
-    mensagem.textContent =
-      "Não foi possível carregar os serviços. Atualize a página.";
-
     servico.innerHTML =
       '<option value="">Serviços indisponíveis</option>';
-
+    mensagem.textContent =
+      "Não foi possível carregar os serviços. Atualize a página.";
     return;
   }
 
@@ -299,12 +249,9 @@ async function carregarServicos() {
     '<option value="">Selecione um serviço</option>';
 
   (lista || []).forEach(item => {
-
     const opcao = document.createElement("option");
-
     opcao.value = item.id;
     opcao.textContent = item.name;
-
     servico.appendChild(opcao);
   });
 
@@ -314,29 +261,29 @@ async function carregarServicos() {
   }
 }
 
-// CARREGAR HORÁRIOS DISPONÍVEIS PARA SELEÇÃO
+// HORÁRIOS DE ATENDIMENTO
 
 function carregarHorarios() {
-
   horario.innerHTML =
     '<option value="">Selecione um horário</option>';
 
   if (!data.value) return;
+
+  if (data.value < dataHojeLocal()) {
+    horario.innerHTML =
+      '<option value="">Escolha uma data válida</option>';
+    return;
+  }
 
   const dia = new Date(
     data.value + "T12:00:00"
   ).getDay();
 
   if (dia === 0) {
-
     horario.innerHTML =
       '<option value="">Fechado aos domingos</option>';
-
     return;
   }
-
-  // Segunda a sexta: 08:30 às 19:00
-  // Sábado: 08:00 às 16:00
 
   const abertura = dia === 6 ? 8 * 60 : 8 * 60 + 30;
   const fechamento = dia === 6 ? 16 * 60 : 19 * 60;
@@ -346,17 +293,13 @@ function carregarHorarios() {
     minutos < fechamento;
     minutos += 30
   ) {
+    const h = String(Math.floor(minutos / 60))
+      .padStart(2, "0");
 
-    const h = String(
-      Math.floor(minutos / 60)
-    ).padStart(2, "0");
-
-    const m = String(
-      minutos % 60
-    ).padStart(2, "0");
+    const m = String(minutos % 60)
+      .padStart(2, "0");
 
     const opcao = document.createElement("option");
-
     opcao.value = h + ":" + m;
     opcao.textContent = h + ":" + m;
 
@@ -369,80 +312,66 @@ data.addEventListener("change", carregarHorarios);
 // ENVIAR AGENDAMENTO
 
 formulario.addEventListener("submit", async e => {
-
   e.preventDefault();
 
   if (!formulario.reportValidity()) return;
 
-  botao.disabled = true;
+  if (data.value < dataHojeLocal()) {
+    mensagem.textContent =
+      "Escolha uma data de hoje ou futura.";
+    return;
+  }
 
+  if (!servico.value || !horario.value) {
+    mensagem.textContent =
+      "Selecione um serviço e um horário.";
+    return;
+  }
+
+  botao.disabled = true;
   mensagem.textContent = "Enviando solicitação...";
 
-  const nome = document
-    .getElementById("nome")
+  const nome = document.getElementById("nome")
     .value.trim();
 
-  const telefone = document
-    .getElementById("telefone")
+  const telefone = document.getElementById("telefone")
+    .value.trim();
+
+  const observacoes = document
+    .getElementById("observacoes")
     .value.trim();
 
   try {
-
     const { error } = await db
       .from("bookings")
       .insert({
-
         client_name: nome,
-
         client_phone: telefone,
-
         service_id: servico.value,
-
         appointment_date: data.value,
-
         appointment_time: horario.value,
-
-        notes: document
-          .getElementById("observacoes")
-          .value.trim(),
-
+        notes: observacoes,
         status: "pending"
-
       });
 
     if (error) {
-
-      console.error(
-        "Erro ao registrar agendamento:",
-        error
-      );
-
+      console.error(error);
       mensagem.textContent =
         "Não foi possível solicitar esse horário. Ele pode estar ocupado. Tente outro.";
-
-      botao.disabled = false;
-
       return;
     }
 
-    mensagem.textContent =
-      "Solicitação registrada! Para avisar a barbearia, toque no botão abaixo.";
+    const servicoEscolhido =
+      servico.options[servico.selectedIndex].text;
 
     const texto = encodeURIComponent(
-
-      "Olá! Fiz uma solicitação de agendamento na Barbearia do Gaúcho." +
-
+      "Olá! Recebi uma nova solicitação de agendamento na Barbearia do Gaúcho." +
       "\nNome: " + nome +
-
       "\nTelefone: " + telefone +
-
-      "\nServiço: " +
-      servico.options[servico.selectedIndex].text +
-
+      "\nServiço: " + servicoEscolhido +
       "\nData: " + data.value +
-
-      "\nHorário: " + horario.value
-
+      "\nHorário: " + horario.value +
+      "\nObservações: " + (observacoes || "Nenhuma")
     );
 
     const link = document.createElement("a");
@@ -451,11 +380,13 @@ formulario.addEventListener("submit", async e => {
       "https://wa.me/" + WHATSAPP + "?text=" + texto;
 
     link.target = "_blank";
-
     link.rel = "noopener noreferrer";
 
     link.textContent =
-      "Enviar confirmação pelo WhatsApp";
+      "Avisar a Barbearia pelo WhatsApp";
+
+    mensagem.textContent =
+      "Agendamento registrado com sucesso! Para enviar os detalhes à barbearia, toque no botão abaixo.";
 
     mensagem.appendChild(link);
 
@@ -467,27 +398,19 @@ formulario.addEventListener("submit", async e => {
       '<option value="">Escolha a data primeiro</option>';
 
   } catch (erro) {
-
-    console.error(
-      "Falha inesperada:",
-      erro
-    );
+    console.error(erro);
 
     mensagem.textContent =
-      "Ocorreu um erro de conexão. Verifique a internet e tente novamente.";
+      "Erro de conexão. Verifique sua internet e tente novamente.";
 
   } finally {
-
     botao.disabled = false;
-
   }
-
 });
 
-// INICIAR PÁGINA
+// INICIAR
 
 carregarServicos();
-
 </script>
 
 </body>
