@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -31,6 +32,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .acoes{display:flex;gap:8px}
 .acoes button{flex:1}
 .price-hint{font-size:13px;color:#d6b36a;margin-top:5px}
+.link-button{display:block;text-align:center;margin-top:16px;color:#e5c77f;text-decoration:underline;cursor:pointer}
 footer{text-align:center;padding:22px 15px;color:#c6a45d;font-size:13px}
 @media(max-width:600px){
 main,#admin{margin:18px 12px;padding:20px}
@@ -93,6 +95,22 @@ header h1{font-size:25px}
 <button id="entrarAdmin" type="submit">Entrar no painel</button>
 </form>
 
+<a id="esqueciSenha" class="link-button">Esqueci minha senha</a>
+
+<form id="redefinirSenhaForm" hidden>
+<h2>Definir nova senha</h2>
+<p class="intro">Digite sua nova senha para acessar o painel administrativo.</p>
+
+<label for="novaSenha">Nova senha</label>
+<input id="novaSenha" type="password" minlength="8" autocomplete="new-password" required placeholder="Mínimo de 8 caracteres">
+
+<label for="confirmarSenha">Confirme a nova senha</label>
+<input id="confirmarSenha" type="password" minlength="8" autocomplete="new-password" required placeholder="Digite novamente">
+
+<button id="salvarNovaSenha" type="submit">Salvar nova senha</button>
+<button id="voltarLogin" class="secundario" type="button">Voltar ao login</button>
+</form>
+
 <div id="adminMensagem" role="status" aria-live="polite"></div>
 
 <div id="painelAdmin" hidden>
@@ -131,6 +149,31 @@ const horario=document.getElementById("horario");
 const mensagem=document.getElementById("mensagem");
 const botao=document.getElementById("enviar");
 
+const loginForm=document.getElementById("loginForm");
+const redefinirSenhaForm=document.getElementById("redefinirSenhaForm");
+const esqueciSenha=document.getElementById("esqueciSenha");
+const adminMensagem=document.getElementById("adminMensagem");
+const painelAdmin=document.getElementById("painelAdmin");
+const listaAgendamentos=document.getElementById("listaAgendamentos");
+const listaPrecos=document.getElementById("listaPrecos");
+
+const ordemServicos=[
+"Corte social",
+"Corte degradê",
+"Corte navalhado + Shaver",
+"Corte infantil",
+"Cabelo & Barba",
+"Barba na navalha",
+"Pigmentação",
+"Progressiva"
+];
+
+function ordenarServicos(lista){
+return (lista||[]).sort((a,b)=>
+ordemServicos.indexOf(a.name)-ordemServicos.indexOf(b.name)
+);
+}
+
 function dataHojeLocal(){
 const hoje=new Date();
 return [
@@ -157,8 +200,7 @@ servico.innerHTML='<option value="">Carregando serviços...</option>';
 const {data:lista,error}=await db
 .from("services")
 .select("id,name,price,price_note")
-.eq("is_active",true)
-.order("name");
+.eq("is_active",true);
 
 if(error){
 console.error(error);
@@ -169,7 +211,7 @@ return;
 
 servico.innerHTML='<option value="">Selecione um serviço</option>';
 
-(lista||[]).forEach(item=>{
+ordenarServicos(lista).forEach(item=>{
 const op=document.createElement("option");
 op.value=item.id;
 op.textContent=item.name+" — "+formatarPreco(item.price,item.price_note);
@@ -288,25 +330,117 @@ botao.disabled=false;
 }
 });
 
-// PAINEL ADMINISTRATIVO
-const loginForm=document.getElementById("loginForm");
-const adminMensagem=document.getElementById("adminMensagem");
-const painelAdmin=document.getElementById("painelAdmin");
-const listaAgendamentos=document.getElementById("listaAgendamentos");
-const listaPrecos=document.getElementById("listaPrecos");
-
+// CONTROLE DAS TELAS ADMINISTRATIVAS
 function mostrarPainel(logado){
 loginForm.hidden=logado;
+esqueciSenha.hidden=logado;
+redefinirSenhaForm.hidden=true;
 painelAdmin.hidden=!logado;
 }
 
-function linha(container,label,value){
-const p=document.createElement("p");
-const b=document.createElement("strong");
-b.textContent=label+": ";
-p.append(b,document.createTextNode(value||"—"));
-container.appendChild(p);
+// RECUPERAÇÃO DE SENHA
+esqueciSenha.addEventListener("click",async()=>{
+const email=document.getElementById("adminEmail").value.trim();
+
+if(!email){
+adminMensagem.textContent="Digite seu e-mail administrativo antes de solicitar a recuperação.";
+document.getElementById("adminEmail").focus();
+return;
 }
+
+esqueciSenha.style.pointerEvents="none";
+adminMensagem.textContent="Enviando solicitação de recuperação...";
+
+try{
+const {error}=await db.auth.resetPasswordForEmail(email,{
+redirectTo:window.location.origin+"/"
+});
+
+if(error)throw error;
+
+adminMensagem.textContent="Se o e-mail estiver cadastrado, enviaremos um link de recuperação. Confira sua caixa de entrada e também a pasta de spam.";
+
+}catch(err){
+console.error(err);
+adminMensagem.textContent=err.message||"Não foi possível solicitar a recuperação. Tente novamente.";
+}finally{
+esqueciSenha.style.pointerEvents="auto";
+}
+});
+
+// RECONHECER O LINK DE RECUPERAÇÃO
+function abrirTelaNovaSenha(){
+loginForm.hidden=true;
+esqueciSenha.hidden=true;
+painelAdmin.hidden=true;
+redefinirSenhaForm.hidden=false;
+adminMensagem.textContent="Link de recuperação reconhecido. Escolha sua nova senha.";
+}
+
+const hashInicial=window.location.hash;
+if(hashInicial.includes("type=recovery")){
+abrirTelaNovaSenha();
+}
+
+// O SUPABASE AVISA QUANDO A SESSÃO DE RECUPERAÇÃO É ABERTA
+db.auth.onAuthStateChange((event,session)=>{
+if(event==="PASSWORD_RECOVERY"){
+abrirTelaNovaSenha();
+}
+});
+
+// SALVAR A NOVA SENHA
+redefinirSenhaForm.addEventListener("submit",async e=>{
+e.preventDefault();
+
+const nova=document.getElementById("novaSenha").value;
+const confirmar=document.getElementById("confirmarSenha").value;
+const salvar=document.getElementById("salvarNovaSenha");
+
+if(nova.length<8){
+adminMensagem.textContent="A senha precisa ter pelo menos 8 caracteres.";
+return;
+}
+
+if(nova!==confirmar){
+adminMensagem.textContent="As senhas não coincidem. Digite novamente.";
+return;
+}
+
+salvar.disabled=true;
+adminMensagem.textContent="Salvando sua nova senha...";
+
+try{
+const {error}=await db.auth.updateUser({password:nova});
+
+if(error)throw error;
+
+await db.auth.signOut();
+
+redefinirSenhaForm.reset();
+redefinirSenhaForm.hidden=true;
+loginForm.hidden=false;
+esqueciSenha.hidden=false;
+
+document.getElementById("adminSenha").value="";
+adminMensagem.textContent="Senha alterada com sucesso! Agora entre com seu e-mail e a nova senha.";
+
+window.history.replaceState(null,"",window.location.pathname);
+
+}catch(err){
+console.error(err);
+adminMensagem.textContent=err.message||"Não foi possível alterar a senha. Solicite um novo link de recuperação.";
+}finally{
+salvar.disabled=false;
+}
+});
+
+document.getElementById("voltarLogin").addEventListener("click",()=>{
+redefinirSenhaForm.hidden=true;
+loginForm.hidden=false;
+esqueciSenha.hidden=false;
+adminMensagem.textContent="";
+});
 
 // EDITAR PREÇOS
 async function carregarPrecos(){
@@ -314,8 +448,7 @@ listaPrecos.textContent="Carregando serviços...";
 
 const {data:itens,error}=await db
 .from("services")
-.select("id,name,price,price_note")
-.order("name");
+.select("id,name,price,price_note");
 
 if(error){
 console.error(error);
@@ -325,7 +458,7 @@ return;
 
 listaPrecos.replaceChildren();
 
-(itens||[]).forEach(item=>{
+ordenarServicos(itens).forEach(item=>{
 const card=document.createElement("div");
 card.className="service-edit";
 
@@ -381,6 +514,15 @@ await carregarServicos();
 card.append(input,hint,salvar);
 listaPrecos.appendChild(card);
 });
+}
+
+// MOSTRAR INFORMAÇÕES DOS AGENDAMENTOS
+function linha(container,label,value){
+const p=document.createElement("p");
+const b=document.createElement("strong");
+b.textContent=label+": ";
+p.append(b,document.createTextNode(value||"—"));
+container.appendChild(p);
 }
 
 // LISTA DE AGENDAMENTOS
