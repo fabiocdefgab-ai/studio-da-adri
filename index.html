@@ -32,7 +32,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .acoes{display:flex;gap:8px}
 .acoes button{flex:1}
 .price-hint{font-size:13px;color:#d6b36a;margin-top:5px}
-.link-button{display:block;text-align:center;margin-top:16px;color:#e5c77f;text-decoration:underline;cursor:pointer}
 footer{text-align:center;padding:22px 15px;color:#c6a45d;font-size:13px}
 @media(max-width:600px){
 main,#admin{margin:18px 12px;padding:20px}
@@ -95,33 +94,15 @@ header h1{font-size:25px}
 <button id="entrarAdmin" type="submit">Entrar no painel</button>
 </form>
 
-<a id="esqueciSenha" class="link-button">Esqueci minha senha</a>
-
-<form id="redefinirSenhaForm" hidden>
-<h2>Definir nova senha</h2>
-<p class="intro">Digite sua nova senha para acessar o painel administrativo.</p>
-
-<label for="novaSenha">Nova senha</label>
-<input id="novaSenha" type="password" minlength="8" autocomplete="new-password" required placeholder="Mínimo de 8 caracteres">
-
-<label for="confirmarSenha">Confirme a nova senha</label>
-<input id="confirmarSenha" type="password" minlength="8" autocomplete="new-password" required placeholder="Digite novamente">
-
-<button id="salvarNovaSenha" type="submit">Salvar nova senha</button>
-<button id="voltarLogin" class="secundario" type="button">Voltar ao login</button>
-</form>
-
 <div id="adminMensagem" role="status" aria-live="polite"></div>
 
 <div id="painelAdmin" hidden>
 <h2>Preços dos serviços</h2>
 <p class="intro">Altere o valor e salve. A progressiva aparece como “A partir de”.</p>
-
 <div id="listaPrecos"></div>
 
 <h2 style="margin-top:28px">Agendamentos</h2>
 <button id="atualizarLista" class="secundario" type="button">Atualizar agendamentos</button>
-
 <div id="listaAgendamentos"></div>
 
 <button id="sairAdmin" class="secundario" type="button">Sair do painel</button>
@@ -135,7 +116,6 @@ Atendimento mediante agendamento.
 </footer>
 
 <script>
-// CONEXÃO COM O SUPABASE DA BARBEARIA DO GAÚCHO
 const SUPABASE_URL="https://wjfbrvjugbjtanznllyo.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_9rPUVBkkXWRd1OpInHNJ4Q_hkSJGZJe";
 const WHATSAPP="5546999815786";
@@ -149,58 +129,26 @@ const horario=document.getElementById("horario");
 const mensagem=document.getElementById("mensagem");
 const botao=document.getElementById("enviar");
 
-const loginForm=document.getElementById("loginForm");
-const redefinirSenhaForm=document.getElementById("redefinirSenhaForm");
-const esqueciSenha=document.getElementById("esqueciSenha");
-const adminMensagem=document.getElementById("adminMensagem");
-const painelAdmin=document.getElementById("painelAdmin");
-const listaAgendamentos=document.getElementById("listaAgendamentos");
-const listaPrecos=document.getElementById("listaPrecos");
-
-const ordemServicos=[
-"Corte social",
-"Corte degradê",
-"Corte navalhado + Shaver",
-"Corte infantil",
-"Cabelo & Barba",
-"Barba na navalha",
-"Pigmentação",
-"Progressiva"
-];
-
-function ordenarServicos(lista){
-return (lista||[]).sort((a,b)=>
-ordemServicos.indexOf(a.name)-ordemServicos.indexOf(b.name)
-);
-}
-
 function dataHojeLocal(){
 const hoje=new Date();
-return [
-hoje.getFullYear(),
-String(hoje.getMonth()+1).padStart(2,"0"),
-String(hoje.getDate()).padStart(2,"0")
-].join("-");
+return [hoje.getFullYear(),String(hoje.getMonth()+1).padStart(2,"0"),String(hoje.getDate()).padStart(2,"0")].join("-");
 }
 
 data.min=dataHojeLocal();
 
 function formatarPreco(valor,nota){
-const dinheiro=Number(valor).toLocaleString("pt-BR",{
-style:"currency",
-currency:"BRL"
-});
+const n=Number(valor);
+const dinheiro=n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 return nota==="starting"?"A partir de "+dinheiro:dinheiro;
 }
 
-// CARREGAR SERVIÇOS E PREÇOS
 async function carregarServicos(){
 servico.innerHTML='<option value="">Carregando serviços...</option>';
 
-const {data:lista,error}=await db
-.from("services")
+const {data:lista,error}=await db.from("services")
 .select("id,name,price,price_note")
-.eq("is_active",true);
+.eq("is_active",true)
+.order("name");
 
 if(error){
 console.error(error);
@@ -211,7 +159,7 @@ return;
 
 servico.innerHTML='<option value="">Selecione um serviço</option>';
 
-ordenarServicos(lista).forEach(item=>{
+(lista||[]).forEach(item=>{
 const op=document.createElement("option");
 op.value=item.id;
 op.textContent=item.name+" — "+formatarPreco(item.price,item.price_note);
@@ -224,11 +172,18 @@ mensagem.textContent="Os serviços ainda precisam ser cadastrados no banco.";
 }
 }
 
-// HORÁRIOS DE ATENDIMENTO
-function carregarHorarios(){
-horario.innerHTML='<option value="">Selecione um horário</option>';
+// CONSULTA DE HORÁRIOS DISPONÍVEIS
+let consultaHorarios=0;
 
-if(!data.value)return;
+async function carregarHorarios(){
+const consulta=++consultaHorarios;
+
+horario.innerHTML='<option value="">Carregando horários...</option>';
+
+if(!data.value){
+horario.innerHTML='<option value="">Escolha uma data primeiro</option>';
+return;
+}
 
 if(data.value<dataHojeLocal()){
 horario.innerHTML='<option value="">Escolha uma data válida</option>';
@@ -242,22 +197,52 @@ horario.innerHTML='<option value="">Fechado aos domingos</option>';
 return;
 }
 
+const {data:ocupados,error}=await db.rpc(
+"horarios_ocupados",
+{p_data:data.value}
+);
+
+if(consulta!==consultaHorarios)return;
+
+if(error){
+console.error(error);
+horario.innerHTML='<option value="">Não foi possível consultar os horários</option>';
+return;
+}
+
+const ocupadosSet=new Set(
+(ocupados||[]).map(x=>String(x.horario).slice(0,5))
+);
+
+horario.innerHTML='<option value="">Selecione um horário</option>';
+
 const abertura=dia===6?8*60:8*60+30;
 const fechamento=dia===6?16*60:19*60;
+
+let livres=0;
 
 for(let m=abertura;m<fechamento;m+=30){
 const h=String(Math.floor(m/60)).padStart(2,"0");
 const min=String(m%60).padStart(2,"0");
+const hora=h+":"+min;
+
+if(ocupadosSet.has(hora))continue;
+
 const op=document.createElement("option");
-op.value=h+":"+min;
-op.textContent=h+":"+min;
+op.value=hora;
+op.textContent=hora;
 horario.appendChild(op);
+livres++;
+}
+
+if(livres===0){
+horario.innerHTML='<option value="">Todos os horários estão ocupados</option>';
 }
 }
 
 data.addEventListener("change",carregarHorarios);
 
-// ENVIAR AGENDAMENTO
+// FORMULÁRIO DE AGENDAMENTO
 formulario.addEventListener("submit",async e=>{
 e.preventDefault();
 
@@ -281,6 +266,7 @@ const telefone=document.getElementById("telefone").value.trim();
 const observacoes=document.getElementById("observacoes").value.trim();
 
 try{
+
 const {error}=await db.from("bookings").insert({
 client_name:nome,
 client_phone:telefone,
@@ -293,7 +279,14 @@ status:"pending"
 
 if(error){
 console.error(error);
-mensagem.textContent="Não foi possível registrar a solicitação. Tente novamente ou escolha outro horário.";
+
+if(error.code==="23505"){
+mensagem.textContent="Esse horário acabou de ser reservado. Escolha outro horário.";
+await carregarHorarios();
+}else{
+mensagem.textContent="Não foi possível registrar a solicitação. Tente novamente.";
+}
+
 return;
 }
 
@@ -330,125 +323,33 @@ botao.disabled=false;
 }
 });
 
-// CONTROLE DAS TELAS ADMINISTRATIVAS
+// PAINEL ADMINISTRATIVO
+const loginForm=document.getElementById("loginForm");
+const adminMensagem=document.getElementById("adminMensagem");
+const painelAdmin=document.getElementById("painelAdmin");
+const listaAgendamentos=document.getElementById("listaAgendamentos");
+const listaPrecos=document.getElementById("listaPrecos");
+
 function mostrarPainel(logado){
 loginForm.hidden=logado;
-esqueciSenha.hidden=logado;
-redefinirSenhaForm.hidden=true;
 painelAdmin.hidden=!logado;
 }
 
-// RECUPERAÇÃO DE SENHA
-esqueciSenha.addEventListener("click",async()=>{
-const email=document.getElementById("adminEmail").value.trim();
-
-if(!email){
-adminMensagem.textContent="Digite seu e-mail administrativo antes de solicitar a recuperação.";
-document.getElementById("adminEmail").focus();
-return;
+function linha(container,label,value){
+const p=document.createElement("p");
+const b=document.createElement("strong");
+b.textContent=label+": ";
+p.append(b,document.createTextNode(value||"—"));
+container.appendChild(p);
 }
 
-esqueciSenha.style.pointerEvents="none";
-adminMensagem.textContent="Enviando solicitação de recuperação...";
-
-try{
-const {error}=await db.auth.resetPasswordForEmail(email,{
-redirectTo:window.location.origin+"/"
-});
-
-if(error)throw error;
-
-adminMensagem.textContent="Se o e-mail estiver cadastrado, enviaremos um link de recuperação. Confira sua caixa de entrada e também a pasta de spam.";
-
-}catch(err){
-console.error(err);
-adminMensagem.textContent=err.message||"Não foi possível solicitar a recuperação. Tente novamente.";
-}finally{
-esqueciSenha.style.pointerEvents="auto";
-}
-});
-
-// RECONHECER O LINK DE RECUPERAÇÃO
-function abrirTelaNovaSenha(){
-loginForm.hidden=true;
-esqueciSenha.hidden=true;
-painelAdmin.hidden=true;
-redefinirSenhaForm.hidden=false;
-adminMensagem.textContent="Link de recuperação reconhecido. Escolha sua nova senha.";
-}
-
-const hashInicial=window.location.hash;
-if(hashInicial.includes("type=recovery")){
-abrirTelaNovaSenha();
-}
-
-// O SUPABASE AVISA QUANDO A SESSÃO DE RECUPERAÇÃO É ABERTA
-db.auth.onAuthStateChange((event,session)=>{
-if(event==="PASSWORD_RECOVERY"){
-abrirTelaNovaSenha();
-}
-});
-
-// SALVAR A NOVA SENHA
-redefinirSenhaForm.addEventListener("submit",async e=>{
-e.preventDefault();
-
-const nova=document.getElementById("novaSenha").value;
-const confirmar=document.getElementById("confirmarSenha").value;
-const salvar=document.getElementById("salvarNovaSenha");
-
-if(nova.length<8){
-adminMensagem.textContent="A senha precisa ter pelo menos 8 caracteres.";
-return;
-}
-
-if(nova!==confirmar){
-adminMensagem.textContent="As senhas não coincidem. Digite novamente.";
-return;
-}
-
-salvar.disabled=true;
-adminMensagem.textContent="Salvando sua nova senha...";
-
-try{
-const {error}=await db.auth.updateUser({password:nova});
-
-if(error)throw error;
-
-await db.auth.signOut();
-
-redefinirSenhaForm.reset();
-redefinirSenhaForm.hidden=true;
-loginForm.hidden=false;
-esqueciSenha.hidden=false;
-
-document.getElementById("adminSenha").value="";
-adminMensagem.textContent="Senha alterada com sucesso! Agora entre com seu e-mail e a nova senha.";
-
-window.history.replaceState(null,"",window.location.pathname);
-
-}catch(err){
-console.error(err);
-adminMensagem.textContent=err.message||"Não foi possível alterar a senha. Solicite um novo link de recuperação.";
-}finally{
-salvar.disabled=false;
-}
-});
-
-document.getElementById("voltarLogin").addEventListener("click",()=>{
-redefinirSenhaForm.hidden=true;
-loginForm.hidden=false;
-esqueciSenha.hidden=false;
-adminMensagem.textContent="";
-});
-
-// EDITAR PREÇOS
+// PREÇOS DOS SERVIÇOS
 async function carregarPrecos(){
 listaPrecos.textContent="Carregando serviços...";
 
-const {data:itens,error}=await db
-.from("services")
-.select("id,name,price,price_note");
+const {data:itens,error}=await db.from("services")
+.select("id,name,price,price_note")
+.order("name");
 
 if(error){
 console.error(error);
@@ -458,7 +359,7 @@ return;
 
 listaPrecos.replaceChildren();
 
-ordenarServicos(itens).forEach(item=>{
+(itens||[]).forEach(item=>{
 const card=document.createElement("div");
 card.className="service-edit";
 
@@ -475,9 +376,7 @@ input.setAttribute("aria-label","Preço de "+item.name);
 
 const hint=document.createElement("div");
 hint.className="price-hint";
-hint.textContent=item.price_note==="starting"
-?"O site mostrará “A partir de” antes do preço."
-:"Preço fixo";
+hint.textContent=item.price_note==="starting"?"O site mostrará “A partir de” antes do preço.":"Preço fixo";
 
 const salvar=document.createElement("button");
 salvar.type="button";
@@ -493,8 +392,7 @@ return;
 
 salvar.disabled=true;
 
-const {error:err}=await db
-.from("services")
+const {error:err}=await db.from("services")
 .update({price:valor})
 .eq("id",item.id);
 
@@ -516,21 +414,11 @@ listaPrecos.appendChild(card);
 });
 }
 
-// MOSTRAR INFORMAÇÕES DOS AGENDAMENTOS
-function linha(container,label,value){
-const p=document.createElement("p");
-const b=document.createElement("strong");
-b.textContent=label+": ";
-p.append(b,document.createTextNode(value||"—"));
-container.appendChild(p);
-}
-
 // LISTA DE AGENDAMENTOS
 async function carregarAgendamentos(){
 listaAgendamentos.textContent="Carregando agendamentos...";
 
-const {data:registros,error}=await db
-.from("bookings")
+const {data:registros,error}=await db.from("bookings")
 .select("id,client_name,client_phone,appointment_date,appointment_time,notes,status,services(name)")
 .order("appointment_date",{ascending:true})
 .order("appointment_time",{ascending:true});
@@ -584,9 +472,9 @@ listaAgendamentos.appendChild(card);
 });
 }
 
+// ALTERAR STATUS
 async function alterarStatus(id,status){
-const {error}=await db
-.from("bookings")
+const {error}=await db.from("bookings")
 .update({status})
 .eq("id",id);
 
@@ -612,7 +500,11 @@ entrar.disabled=true;
 adminMensagem.textContent="Verificando acesso...";
 
 try{
-const {error}=await db.auth.signInWithPassword({email,password});
+
+const {error}=await db.auth.signInWithPassword({
+email,
+password
+});
 
 if(error)throw error;
 
@@ -636,6 +528,7 @@ entrar.disabled=false;
 }
 });
 
+// BOTÕES DO PAINEL
 document.getElementById("atualizarLista")
 .addEventListener("click",carregarAgendamentos);
 
@@ -648,7 +541,6 @@ listaAgendamentos.replaceChildren();
 listaPrecos.replaceChildren();
 });
 
-// INICIAR
 mostrarPainel(false);
 carregarServicos();
 </script>
