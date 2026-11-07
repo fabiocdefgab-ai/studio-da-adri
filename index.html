@@ -7,279 +7,817 @@
 <title>Barbearia do Gaúcho</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#101010;color:#f5f5f5;font-family:Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:#101010;color:#f5f5f5;font-family:Arial,sans-serif}
 header{background:#050505;color:#d6b36a;text-align:center;padding:30px 15px;border-bottom:2px solid #b99750}
 .logo{display:block;width:100%;max-width:280px;max-height:240px;object-fit:contain;margin:0 auto 15px}
-header h1{margin:10px 0;font-size:30px;letter-spacing:1px}header p{color:#d6b36a}
+header h1{margin:10px 0;font-size:30px;letter-spacing:1px}
+header p{color:#d6b36a}
 main,#admin{max-width:650px;margin:25px auto;padding:24px;background:#1c1c1c;border:1px solid #9d7b3e;border-radius:14px}
-h2{text-align:center;color:#d6b36a;margin-top:0}label{display:block;margin-top:17px;font-weight:bold;color:#e5c77f}
+h2{text-align:center;color:#d6b36a;margin-top:0}
+label{display:block;margin-top:17px;font-weight:bold;color:#e5c77f}
 input,select,textarea{width:100%;padding:14px;margin-top:7px;background:#292929;color:white;border:1px solid #777;border-radius:8px;font-size:16px}
 input:focus,select:focus,textarea:focus{outline:2px solid #d6b36a;border-color:#d6b36a}
 button{width:100%;padding:14px;margin-top:18px;background:#d6b36a;color:#111;border:0;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.5;cursor:not-allowed}.secundario{background:#333;color:#fff;border:1px solid #9d7b3e}.perigo{background:#7b2828;color:#fff}
-#mensagem,#adminMensagem,#mensagemBloqueio{text-align:center;margin-top:18px;line-height:1.6;overflow-wrap:anywhere}
+button:disabled{opacity:.5;cursor:not-allowed}
+.secundario{background:#333;color:#fff;border:1px solid #9d7b3e}
+.perigo{background:#7b2828;color:#fff}
+#mensagem,#adminMensagem,#mensagemBloqueio,#mensagemNovoServico{text-align:center;margin-top:18px;line-height:1.6;overflow-wrap:anywhere}
 #mensagem a{display:block;margin-top:15px;padding:13px;background:#176b3a;color:white;text-decoration:none;border-radius:8px;font-weight:bold}
 .intro{text-align:center;color:#ccc;font-size:14px;line-height:1.5}
 .booking,.service-edit,.blocked-edit{border:1px solid #66532f;border-radius:10px;padding:15px;margin-top:14px;background:#242424}
-.booking p,.blocked-edit p{margin:7px 0;overflow-wrap:anywhere}.status{color:#e5c77f;font-weight:bold}
-.acoes{display:flex;gap:8px}.acoes button{flex:1}.price-hint{font-size:13px;color:#d6b36a;margin-top:5px}
+.booking p,.blocked-edit p{margin:7px 0;overflow-wrap:anywhere}
+.status{color:#e5c77f;font-weight:bold}
+.acoes{display:flex;gap:8px}
+.acoes button{flex:1}
+.price-hint{font-size:13px;color:#d6b36a;margin-top:5px}
 .grupo-feriado{border:1px solid #9d7b3e;border-radius:10px;padding:15px;margin-top:16px;background:#202020}
-@media(max-width:600px){main,#admin{margin:18px 12px;padding:20px}header h1{font-size:25px}.acoes{flex-direction:column;gap:0}}
+@media(max-width:600px){
+main,#admin{margin:18px 12px;padding:20px}
+header h1{font-size:25px}
+.acoes{flex-direction:column;gap:0}
+}
 </style>
 </head>
 <body>
+
 <header>
 <img class="logo" src="logo-barbearia-do-gaucho.jpg" alt="Logotipo da Barbearia do Gaúcho">
-<h1>Barbearia do Gaúcho</h1><p>Tradição e qualidade desde 1998</p>
+<h1>Barbearia do Gaúcho</h1>
+<p>Tradição e qualidade desde 1998</p>
 </header>
 
 <main>
 <h2>Agende seu horário</h2>
 <p class="intro">Segunda a sexta: 8h30 às 20h. Sábado: 8h às 17h. Domingo: fechado.</p>
+
 <form id="formulario">
-<label for="nome">Seu nome</label><input id="nome" type="text" required maxlength="100" autocomplete="name" placeholder="Digite seu nome">
-<label for="telefone">Seu WhatsApp</label><input id="telefone" type="tel" required maxlength="20" autocomplete="tel" placeholder="(00) 00000-0000">
-<label for="servico">Serviço desejado</label><select id="servico" required><option value="">Carregando serviços...</option></select>
-<label for="data">Data</label><input id="data" type="date" required>
-<label for="horario">Horário</label><select id="horario" required><option value="">Escolha a data primeiro</option></select>
-<label for="observacoes">Observações (opcional)</label><textarea id="observacoes" rows="3" maxlength="500" placeholder="Alguma observação?"></textarea>
+<label for="nome">Seu nome</label>
+<input id="nome" type="text" required maxlength="100" autocomplete="name" placeholder="Digite seu nome">
+
+<label for="telefone">Seu WhatsApp</label>
+<input id="telefone" type="tel" required maxlength="20" autocomplete="tel" placeholder="(00) 00000-0000">
+
+<label for="servico">Serviço desejado</label>
+<select id="servico" required>
+<option value="">Carregando serviços...</option>
+</select>
+
+<label for="data">Data</label>
+<input id="data" type="date" required>
+
+<label for="horario">Horário</label>
+<select id="horario" required>
+<option value="">Escolha a data primeiro</option>
+</select>
+
+<label for="observacoes">Observações (opcional)</label>
+<textarea id="observacoes" rows="3" maxlength="500" placeholder="Alguma observação?"></textarea>
+
 <button id="enviar" type="submit">Solicitar agendamento</button>
-</form><div id="mensagem" role="status" aria-live="polite"></div>
+</form>
+<div id="mensagem" role="status" aria-live="polite"></div>
 </main>
 
 <section id="admin">
-<h2>Área do administrador</h2><p class="intro">Acesso restrito ao administrador da Barbearia do Gaúcho.</p>
+<h2>Área do administrador</h2>
+<p class="intro">Acesso restrito ao administrador da Barbearia do Gaúcho.</p>
+
 <form id="loginForm">
-<label for="adminEmail">E-mail</label><input id="adminEmail" type="email" autocomplete="username" required placeholder="E-mail do administrador">
-<label for="adminSenha">Senha</label><input id="adminSenha" type="password" autocomplete="current-password" required placeholder="Sua senha">
+<label for="adminEmail">E-mail</label>
+<input id="adminEmail" type="email" autocomplete="username" required placeholder="E-mail do administrador">
+
+<label for="adminSenha">Senha</label>
+<input id="adminSenha" type="password" autocomplete="current-password" required placeholder="Sua senha">
+
 <button id="entrarAdmin" type="submit">Entrar no painel</button>
-</form><div id="adminMensagem" role="status" aria-live="polite"></div>
+</form>
+
+<div id="adminMensagem" role="status" aria-live="polite"></div>
+
 <div id="painelAdmin" hidden>
-<h2>Preços dos serviços</h2><p class="intro">Os preços são carregados do Supabase. Serviços com price_note = "starting" aparecem como “A partir de”.</p><div id="listaPrecos"></div>
-<h2 style="margin-top:28px">Bloquear horários</h2><p class="intro">Bloqueie um horário ou todos os horários de uma data. Agendamentos existentes não são cancelados.</p>
-<label for="dataBloqueio">Data</label><input id="dataBloqueio" type="date">
-<label for="horaBloqueio">Horário (bloqueio individual)</label><input id="horaBloqueio" type="time" step="1800">
-<label for="motivoBloqueio">Motivo (opcional)</label><input id="motivoBloqueio" type="text" maxlength="100" placeholder="Ex.: Feriado ou folga">
+<h2>Preços dos serviços</h2>
+<p class="intro">Os preços são carregados do Supabase. Serviços com preço inicial aparecem como “A partir de”.</p>
+<div id="listaPrecos"></div>
+
+<h2 style="margin-top:28px">Cadastrar novo serviço</h2>
+<p class="intro">Adicione serviços e preços diretamente pelo painel administrativo.</p>
+
+<form id="novoServicoForm">
+<label for="novoServicoNome">Nome do serviço</label>
+<input id="novoServicoNome" type="text" maxlength="100" required placeholder="Ex.: Sobrancelha">
+
+<label for="novoServicoPreco">Preço em reais</label>
+<input id="novoServicoPreco" type="number" min="0.01" step="0.01" required placeholder="Ex.: 35">
+
+<label for="novoServicoTipo">Tipo de preço</label>
+<select id="novoServicoTipo" required>
+<option value="fixed">Preço fixo</option>
+<option value="starting">A partir de</option>
+</select>
+
+<button id="cadastrarServico" type="submit">Cadastrar serviço</button>
+</form>
+<div id="mensagemNovoServico" role="status" aria-live="polite"></div>
+
+<h2 style="margin-top:28px">Bloquear horários</h2>
+<p class="intro">Bloqueie um horário ou todos os horários de uma data. Agendamentos existentes não são cancelados.</p>
+
+<label for="dataBloqueio">Data</label>
+<input id="dataBloqueio" type="date">
+
+<label for="horaBloqueio">Horário (bloqueio individual)</label>
+<input id="horaBloqueio" type="time" step="1800">
+
+<label for="motivoBloqueio">Motivo (opcional)</label>
+<input id="motivoBloqueio" type="text" maxlength="100" placeholder="Ex.: Feriado ou folga">
+
 <button id="salvarBloqueio" type="button">Bloquear apenas este horário</button>
-<div class="grupo-feriado"><strong>Bloqueio de dia inteiro</strong><p class="intro">Bloqueia todos os horários de atendimento da data escolhida.</p>
+
+<div class="grupo-feriado">
+<strong>Bloqueio de dia inteiro</strong>
+<p class="intro">Bloqueia todos os horários de atendimento da data escolhida.</p>
 <button id="bloquearDia" type="button">Bloquear todos os horários deste dia</button>
-<button id="liberarDia" class="secundario" type="button">Liberar todos os bloqueios desta data</button></div>
-<div id="mensagemBloqueio" role="status" aria-live="polite"></div><div id="listaBloqueios"></div>
-<h2 style="margin-top:28px">Agendamentos</h2><button id="atualizarLista" class="secundario" type="button">Atualizar agendamentos</button>
-<div id="listaAgendamentos"></div><button id="sairAdmin" class="secundario" type="button">Sair do painel</button>
-</div></section>
+<button id="liberarDia" class="secundario" type="button">Liberar todos os bloqueios desta data</button>
+</div>
+
+<div id="mensagemBloqueio" role="status" aria-live="polite"></div>
+<div id="listaBloqueios"></div>
+
+<h2 style="margin-top:28px">Agendamentos</h2>
+<button id="atualizarLista" class="secundario" type="button">Atualizar agendamentos</button>
+<div id="listaAgendamentos"></div>
+<button id="sairAdmin" class="secundario" type="button">Sair do painel</button>
+</div>
+</section>
 
 <footer style="text-align:center;color:#d6b36a;background:#050505;padding:25px 15px;font-size:14px;line-height:1.8;border-top:1px solid #9d7b3e">
-© 2026 Barbearia do Gaúcho<br>Tradição, estilo e qualidade desde 1998.<br>Atendimento mediante agendamento.
+© 2026 Barbearia do Gaúcho<br>
+Tradição, estilo e qualidade desde 1998.<br>
+Atendimento mediante agendamento.
 </footer>
 
 <script>
 const SUPABASE_URL="https://wjfbrvjugbjtanznllyo.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_9rPUVBkkXWRd1OpInHNJ4Q_hkSJGZJe";
 const WHATSAPP="5546999815786";
+
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const $=id=>document.getElementById(id);
-const formulario=$("formulario"),servico=$("servico"),data=$("data"),horario=$("horario"),mensagem=$("mensagem"),botao=$("enviar");
 
-function dataHojeLocal(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")}
+const formulario=$("formulario");
+const servico=$("servico");
+const data=$("data");
+const horario=$("horario");
+const mensagem=$("mensagem");
+const botao=$("enviar");
+
+function dataHojeLocal(){
+const d=new Date();
+return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
+}
+
 data.min=dataHojeLocal();
-function formatarPreco(v,n){const p=Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});return n==="starting"?"A partir de "+p:p}
+
+function formatarPreco(v,n){
+const p=Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+return n==="starting"?"A partir de "+p:p;
+}
 
 async function carregarServicos(){
 servico.innerHTML='<option value="">Carregando serviços...</option>';
-const {data:lista,error}=await db.from("services").select("id,name,price,price_note").eq("is_active",true).order("name");
-if(error){console.error(error);servico.innerHTML='<option value="">Serviços indisponíveis</option>';mensagem.textContent="Não foi possível carregar os serviços. Atualize a página.";return}
+
+const {data:lista,error}=await db
+.from("services")
+.select("id,name,price,price_note")
+.eq("is_active",true)
+.order("name");
+
+if(error){
+console.error(error);
+servico.innerHTML='<option value="">Serviços indisponíveis</option>';
+mensagem.textContent="Não foi possível carregar os serviços. Atualize a página.";
+return;
+}
+
 servico.innerHTML='<option value="">Selecione um serviço</option>';
-(lista||[]).forEach(i=>{const o=document.createElement("option");o.value=i.id;o.textContent=i.name+" — "+formatarPreco(i.price,i.price_note);servico.appendChild(o)});
-if(!lista?.length){servico.innerHTML='<option value="">Nenhum serviço cadastrado</option>';mensagem.textContent="Os serviços ainda precisam ser cadastrados no banco."}
+
+(lista||[]).forEach(i=>{
+const o=document.createElement("option");
+o.value=i.id;
+o.textContent=i.name+" — "+formatarPreco(i.price,i.price_note);
+servico.appendChild(o);
+});
+
+if(!lista?.length){
+servico.innerHTML='<option value="">Nenhum serviço cadastrado</option>';
+mensagem.textContent="Os serviços ainda precisam ser cadastrados no banco.";
+}
 }
 
 let consultaHorarios=0;
+
 async function carregarHorarios(){
-const atual=++consultaHorarios;horario.innerHTML='<option value="">Selecione um horário</option>';
+const atual=++consultaHorarios;
+horario.innerHTML='<option value="">Selecione um horário</option>';
+
 if(!data.value)return;
-if(data.value<dataHojeLocal()){horario.innerHTML='<option value="">Escolha uma data válida</option>';return}
+
+if(data.value<dataHojeLocal()){
+horario.innerHTML='<option value="">Escolha uma data válida</option>';
+return;
+}
+
 const dia=new Date(data.value+"T12:00:00").getDay();
-if(dia===0){horario.innerHTML='<option value="">Fechado aos domingos</option>';return}
-const abertura=dia===6?480:510,fechamento=dia===6?1020:1200;
+
+if(dia===0){
+horario.innerHTML='<option value="">Fechado aos domingos</option>';
+return;
+}
+
+const abertura=dia===6?480:510;
+const fechamento=dia===6?1020:1200;
+
 const {data:ocupados,error}=await db.rpc("horarios_ocupados",{p_data:data.value});
+
 if(atual!==consultaHorarios)return;
-if(error){console.error(error);horario.innerHTML='<option value="">Não foi possível consultar os horários</option>';return}
-const indisponiveis=new Set((ocupados||[]).map(x=>String(x.horario).slice(0,5)));let qtd=0;
-for(let m=abertura;m<=fechamento;m+=30){const h=String(Math.floor(m/60)).padStart(2,"0"),mi=String(m%60).padStart(2,"0"),v=h+":"+mi;if(indisponiveis.has(v))continue;const o=document.createElement("option");o.value=v;o.textContent=v;horario.appendChild(o);qtd++}
+
+if(error){
+console.error(error);
+horario.innerHTML='<option value="">Não foi possível consultar os horários</option>';
+return;
+}
+
+const indisponiveis=new Set((ocupados||[]).map(x=>String(x.horario).slice(0,5)));
+let qtd=0;
+
+for(let m=abertura;m<=fechamento;m+=30){
+const h=String(Math.floor(m/60)).padStart(2,"0");
+const mi=String(m%60).padStart(2,"0");
+const v=h+":"+mi;
+
+if(indisponiveis.has(v))continue;
+
+const o=document.createElement("option");
+o.value=v;
+o.textContent=v;
+horario.appendChild(o);
+qtd++;
+}
+
 if(!qtd)horario.innerHTML='<option value="">Não há horários disponíveis nesta data</option>';
 }
+
 data.addEventListener("change",carregarHorarios);
 
 formulario.addEventListener("submit",async e=>{
-e.preventDefault();if(!formulario.reportValidity())return;
-if(data.value<dataHojeLocal()){mensagem.textContent="Escolha uma data de hoje ou futura.";return}
-if(!servico.value||!horario.value){mensagem.textContent="Selecione um serviço e um horário.";return}
-botao.disabled=true;mensagem.textContent="Enviando solicitação...";
-const nome=$("nome").value.trim(),telefone=$("telefone").value.trim(),obs=$("observacoes").value.trim();
+e.preventDefault();
+
+if(!formulario.reportValidity())return;
+
+if(data.value<dataHojeLocal()){
+mensagem.textContent="Escolha uma data de hoje ou futura.";
+return;
+}
+
+if(!servico.value||!horario.value){
+mensagem.textContent="Selecione um serviço e um horário.";
+return;
+}
+
+botao.disabled=true;
+mensagem.textContent="Enviando solicitação...";
+
+const nome=$("nome").value.trim();
+const telefone=$("telefone").value.trim();
+const obs=$("observacoes").value.trim();
+
 try{
-const {error}=await db.from("bookings").insert({client_name:nome,client_phone:telefone,service_id:servico.value,appointment_date:data.value,appointment_time:horario.value,notes:obs,status:"pending"});
-if(error){console.error(error);if(error.code==="23505"){mensagem.textContent="Este horário acabou de ser reservado. Escolha outro.";await carregarHorarios()}else mensagem.textContent="Não foi possível registrar a solicitação. Tente novamente.";return}
-const nomeServico=servico.options[servico.selectedIndex].text;
-const texto=encodeURIComponent("Olá! Recebi uma nova solicitação de agendamento na Barbearia do Gaúcho.\nNome: "+nome+"\nTelefone: "+telefone+"\nServiço: "+nomeServico+"\nData: "+data.value+"\nHorário: "+horario.value+"\nObservações: "+(obs||"Nenhuma"));
-const a=document.createElement("a");a.href="https://wa.me/"+WHATSAPP+"?text="+texto;a.target="_blank";a.rel="noopener noreferrer";a.textContent="Avisar a Barbearia pelo WhatsApp";
-mensagem.textContent="Solicitação registrada com sucesso! Para enviar os detalhes à barbearia, toque abaixo.";mensagem.appendChild(a);
-formulario.reset();data.min=dataHojeLocal();horario.innerHTML='<option value="">Escolha a data primeiro</option>';
-}catch(err){console.error(err);mensagem.textContent="Erro de conexão. Verifique sua internet e tente novamente."}
-finally{botao.disabled=false}
+const {error}=await db.from("bookings").insert({
+client_name:nome,
+client_phone:telefone,
+service_id:servico.value,
+appointment_date:data.value,
+appointment_time:horario.value,
+notes:obs,
+status:"pending"
 });
+
+if(error){
+console.error(error);
+
+if(error.code==="23505"){
+mensagem.textContent="Este horário acabou de ser reservado. Escolha outro.";
+await carregarHorarios();
+}else{
+mensagem.textContent="Não foi possível registrar a solicitação. Tente novamente.";
+}
+return;
+}
+
+const nomeServico=servico.options[servico.selectedIndex].text;
+
+const texto=encodeURIComponent(
+"Olá! Recebi uma nova solicitação de agendamento na Barbearia do Gaúcho.\n"+
+"Nome: "+nome+"\n"+
+"Telefone: "+telefone+"\n"+
+"Serviço: "+nomeServico+"\n"+
+"Data: "+data.value+"\n"+
+"Horário: "+horario.value+"\n"+
+"Observações: "+(obs||"Nenhuma")
+);
+
+const a=document.createElement("a");
+a.href="https://wa.me/"+WHATSAPP+"?text="+texto;
+a.target="_blank";
+a.rel="noopener noreferrer";
+a.textContent="Avisar a Barbearia pelo WhatsApp";
+
+mensagem.textContent="Solicitação registrada com sucesso! Para enviar os detalhes à barbearia, toque abaixo.";
+mensagem.appendChild(a);
+
+formulario.reset();
+data.min=dataHojeLocal();
+horario.innerHTML='<option value="">Escolha a data primeiro</option>';
+
+}catch(err){
+console.error(err);
+mensagem.textContent="Erro de conexão. Verifique sua internet e tente novamente.";
+}finally{
+botao.disabled=false;
+}
+});
+
 // ADMINISTRAÇÃO
-const loginForm=$("loginForm"),adminMensagem=$("adminMensagem"),painelAdmin=$("painelAdmin");
-const listaAgendamentos=$("listaAgendamentos"),listaPrecos=$("listaPrecos");
-function mostrarPainel(ok){loginForm.hidden=ok;painelAdmin.hidden=!ok}
-function linha(c,l,v){const p=document.createElement("p"),b=document.createElement("strong");b.textContent=l+": ";p.append(b,document.createTextNode(v||"—"));c.appendChild(p)}
+const loginForm=$("loginForm");
+const adminMensagem=$("adminMensagem");
+const painelAdmin=$("painelAdmin");
+const listaAgendamentos=$("listaAgendamentos");
+const listaPrecos=$("listaPrecos");
+
+function mostrarPainel(ok){
+loginForm.hidden=ok;
+painelAdmin.hidden=!ok;
+}
+
+function linha(c,l,v){
+const p=document.createElement("p");
+const b=document.createElement("strong");
+b.textContent=l+": ";
+p.append(b,document.createTextNode(v||"—"));
+c.appendChild(p);
+}
 
 async function carregarPrecos(){
 listaPrecos.textContent="Carregando serviços...";
-const {data:itens,error}=await db.from("services").select("id,name,price,price_note").order("name");
-if(error){console.error(error);listaPrecos.textContent="Não foi possível carregar os preços.";return}
-listaPrecos.replaceChildren();
-(itens||[]).forEach(i=>{
-const card=document.createElement("div");card.className="service-edit";
-const t=document.createElement("strong");t.textContent=i.name;
-const inp=document.createElement("input");inp.type="number";inp.min="0";inp.step="0.01";inp.value=Number(i.price||0).toFixed(2);inp.setAttribute("aria-label","Preço de "+i.name);
-const hint=document.createElement("div");hint.className="price-hint";hint.textContent=i.price_note==="starting"?"O site mostrará “A partir de” antes do preço.":"Preço fixo";
-const btn=document.createElement("button");btn.type="button";btn.textContent="Salvar preço";
-btn.addEventListener("click",async()=>{
-const valor=Number(inp.value);
-if(!Number.isFinite(valor)||valor<0){adminMensagem.textContent="Informe um preço válido.";return}
-btn.disabled=true;
-const {error:err}=await db.from("services").update({price:valor}).eq("id",i.id);
-btn.disabled=false;
-if(err){console.error(err);adminMensagem.textContent="Não foi possível salvar o preço.";return}
-adminMensagem.textContent="Preço de "+i.name+" atualizado.";
-await carregarPrecos();await carregarServicos();
-});
-card.append(t,inp,hint,btn);listaPrecos.appendChild(card);
-});
+
+const {data:itens,error}=await db
+.from("services")
+.select("id,name,price,price_note")
+.order("name");
+
+if(error){
+console.error(error);
+listaPrecos.textContent="Não foi possível carregar os preços.";
+return;
 }
 
+listaPrecos.replaceChildren();
+
+(itens||[]).forEach(i=>{
+const card=document.createElement("div");
+card.className="service-edit";
+
+const t=document.createElement("strong");
+t.textContent=i.name;
+
+const inp=document.createElement("input");
+inp.type="number";
+inp.min="0";
+inp.step="0.01";
+inp.value=Number(i.price||0).toFixed(2);
+inp.setAttribute("aria-label","Preço de "+i.name);
+
+const hint=document.createElement("div");
+hint.className="price-hint";
+hint.textContent=i.price_note==="starting"?
+"O site mostrará “A partir de” antes do preço.":
+"Preço fixo";
+
+const btn=document.createElement("button");
+btn.type="button";
+btn.textContent="Salvar preço";
+
+btn.addEventListener("click",async()=>{
+const valor=Number(inp.value);
+
+if(!Number.isFinite(valor)||valor<0){
+adminMensagem.textContent="Informe um preço válido.";
+return;
+}
+
+btn.disabled=true;
+
+const {error:err}=await db
+.from("services")
+.update({price:valor})
+.eq("id",i.id);
+
+btn.disabled=false;
+
+if(err){
+console.error(err);
+adminMensagem.textContent="Não foi possível salvar o preço.";
+return;
+}
+
+adminMensagem.textContent="Preço de "+i.name+" atualizado.";
+await carregarPrecos();
+await carregarServicos();
+});
+
+card.append(t,inp,hint,btn);
+listaPrecos.appendChild(card);
+});
+}
+// CADASTRAR NOVO SERVIÇO
+$("novoServicoForm").addEventListener("submit",async e=>{
+e.preventDefault();
+
+const nome=$("novoServicoNome").value.trim();
+const preco=Number($("novoServicoPreco").value);
+const tipo=$("novoServicoTipo").value;
+const botaoCadastro=$("cadastrarServico");
+const aviso=$("mensagemNovoServico");
+
+if(!nome||!Number.isFinite(preco)||preco<=0){
+aviso.textContent="Informe um nome e um preço válido.";
+return;
+}
+
+botaoCadastro.disabled=true;
+aviso.textContent="Verificando autorização...";
+
+try{
+// Confere a autorização no servidor antes de cadastrar
+const {data:ehAdmin,error:erroAdmin}=await db.rpc("is_barbearia_admin");
+
+if(erroAdmin||ehAdmin!==true){
+throw new Error("Apenas o administrador autorizado pode cadastrar serviços.");
+}
+
+// Evita cadastrar um serviço com nome repetido
+const {data:existente,error:erroBusca}=await db
+.from("services")
+.select("id")
+.ilike("name",nome)
+.limit(1);
+
+if(erroBusca)throw erroBusca;
+
+if(existente?.length){
+aviso.textContent="Já existe um serviço com esse nome.";
+return;
+}
+
+aviso.textContent="Cadastrando serviço...";
+
+const {error}=await db.from("services").insert({
+name:nome,
+price:preco,
+price_note:tipo,
+is_active:true
+});
+
+if(error)throw error;
+
+aviso.textContent="Serviço cadastrado com sucesso!";
+$("novoServicoForm").reset();
+
+await carregarPrecos();
+await carregarServicos();
+
+}catch(err){
+console.error(err);
+aviso.textContent=err.message||"Não foi possível cadastrar. Confira as permissões.";
+}finally{
+botaoCadastro.disabled=false;
+}
+});
+
 // BLOQUEIOS
-const listaBloqueios=$("listaBloqueios"),mensagemBloqueio=$("mensagemBloqueio"),dataBloqueio=$("dataBloqueio"),horaBloqueio=$("horaBloqueio");
-const botaoBloqueio=$("salvarBloqueio"),botaoBloquearDia=$("bloquearDia"),botaoLiberarDia=$("liberarDia");
+const listaBloqueios=$("listaBloqueios");
+const mensagemBloqueio=$("mensagemBloqueio");
+const dataBloqueio=$("dataBloqueio");
+const horaBloqueio=$("horaBloqueio");
+const botaoBloqueio=$("salvarBloqueio");
+const botaoBloquearDia=$("bloquearDia");
+const botaoLiberarDia=$("liberarDia");
+
 dataBloqueio.min=dataHojeLocal();
 
 function horarioPermitido(dia,hora){
 if(!dia||!hora)return false;
+
 const semana=new Date(dia+"T12:00:00").getDay();
+
 if(semana===0)return false;
-const p=hora.split(":").map(Number),m=p[0]*60+p[1],inicio=semana===6?480:510,fim=semana===6?1020:1200;
+
+const p=hora.split(":").map(Number);
+const m=p[0]*60+p[1];
+const inicio=semana===6?480:510;
+const fim=semana===6?1020:1200;
+
 return m>=inicio&&m<=fim&&m%30===0;
 }
 
 function horariosDoDia(dia){
 const semana=new Date(dia+"T12:00:00").getDay();
+
 if(semana===0)return [];
-const inicio=semana===6?480:510,fim=semana===6?1020:1200,lista=[];
-for(let m=inicio;m<=fim;m+=30)lista.push(String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"));
+
+const inicio=semana===6?480:510;
+const fim=semana===6?1020:1200;
+const lista=[];
+
+for(let m=inicio;m<=fim;m+=30){
+lista.push(
+String(Math.floor(m/60)).padStart(2,"0")+":"+
+String(m%60).padStart(2,"0")
+);
+}
+
 return lista;
 }
 
 async function salvarBloqueio(){
-const dia=dataBloqueio.value,hora=horaBloqueio.value,motivo=$("motivoBloqueio").value.trim();
-if(!dia||!hora){mensagemBloqueio.textContent="Informe a data e o horário.";return}
-if(dia<dataHojeLocal()){mensagemBloqueio.textContent="Escolha hoje ou uma data futura.";return}
-if(!horarioPermitido(dia,hora)){mensagemBloqueio.textContent="Horário inválido ou fora do expediente. Domingo é fechado.";return}
-botaoBloqueio.disabled=true;mensagemBloqueio.textContent="Salvando bloqueio...";
+const dia=dataBloqueio.value;
+const hora=horaBloqueio.value;
+const motivo=$("motivoBloqueio").value.trim();
+
+if(!dia||!hora){
+mensagemBloqueio.textContent="Informe a data e o horário.";
+return;
+}
+
+if(dia<dataHojeLocal()){
+mensagemBloqueio.textContent="Escolha hoje ou uma data futura.";
+return;
+}
+
+if(!horarioPermitido(dia,hora)){
+mensagemBloqueio.textContent="Horário inválido ou fora do expediente. Domingo é fechado.";
+return;
+}
+
+botaoBloqueio.disabled=true;
+mensagemBloqueio.textContent="Salvando bloqueio...";
+
 try{
-const {data:reservas,error:er}=await db.from("bookings").select("id").eq("appointment_date",dia).eq("appointment_time",hora).in("status",["pending","confirmed"]).limit(1);
+const {data:reservas,error:er}=await db
+.from("bookings")
+.select("id")
+.eq("appointment_date",dia)
+.eq("appointment_time",hora)
+.in("status",["pending","confirmed"])
+.limit(1);
+
 if(er)throw er;
-if(reservas?.length){mensagemBloqueio.textContent="Este horário já possui um agendamento ativo. Cancele-o antes de bloquear.";return}
-const {error}=await db.from("blocked_slots").insert({appointment_date:dia,appointment_time:hora,reason:motivo||null});
+
+if(reservas?.length){
+mensagemBloqueio.textContent="Este horário já possui um agendamento ativo. Cancele-o antes de bloquear.";
+return;
+}
+
+const {error}=await db.from("blocked_slots").insert({
+appointment_date:dia,
+appointment_time:hora,
+reason:motivo||null
+});
+
 if(error){
-if(error.code==="23505"){mensagemBloqueio.textContent="Este horário já está bloqueado.";return}
+if(error.code==="23505"){
+mensagemBloqueio.textContent="Este horário já está bloqueado.";
+return;
+}
 throw error;
 }
+
 mensagemBloqueio.textContent="Horário bloqueado com sucesso.";
-$("motivoBloqueio").value="";await carregarBloqueios();
-}catch(err){console.error(err);mensagemBloqueio.textContent="Não foi possível salvar. Confira as permissões do administrador."}
-finally{botaoBloqueio.disabled=false}
+$("motivoBloqueio").value="";
+await carregarBloqueios();
+
+}catch(err){
+console.error(err);
+mensagemBloqueio.textContent="Não foi possível salvar. Confira as permissões do administrador.";
+}finally{
+botaoBloqueio.disabled=false;
+}
 }
 
 async function bloquearDiaInteiro(){
-const dia=dataBloqueio.value,motivo=$("motivoBloqueio").value.trim();
-if(!dia){mensagemBloqueio.textContent="Escolha a data que deseja bloquear.";return}
-if(dia<dataHojeLocal()){mensagemBloqueio.textContent="Escolha hoje ou uma data futura.";return}
+const dia=dataBloqueio.value;
+const motivo=$("motivoBloqueio").value.trim();
+
+if(!dia){
+mensagemBloqueio.textContent="Escolha a data que deseja bloquear.";
+return;
+}
+
+if(dia<dataHojeLocal()){
+mensagemBloqueio.textContent="Escolha hoje ou uma data futura.";
+return;
+}
+
 const hs=horariosDoDia(dia);
-if(!hs.length){mensagemBloqueio.textContent="Domingo já é fechado. Escolha outro dia.";return}
+
+if(!hs.length){
+mensagemBloqueio.textContent="Domingo já é fechado. Escolha outro dia.";
+return;
+}
+
 if(!confirm("Confirma bloquear todos os "+hs.length+" horários de atendimento do dia "+dia+"? Agendamentos existentes não serão cancelados."))return;
+
 botaoBloquearDia.disabled=botaoBloqueio.disabled=botaoLiberarDia.disabled=true;
 mensagemBloqueio.textContent="Verificando agendamentos e bloqueando o dia...";
+
 try{
-const {data:reservas,error:er}=await db.from("bookings").select("appointment_time").eq("appointment_date",dia).in("status",["pending","confirmed"]);
+const {data:reservas,error:er}=await db
+.from("bookings")
+.select("appointment_time")
+.eq("appointment_date",dia)
+.in("status",["pending","confirmed"]);
+
 if(er)throw er;
-const ocupados=new Set((reservas||[]).map(r=>String(r.appointment_time).slice(0,5)));
-const {data:existentes,error:ee}=await db.from("blocked_slots").select("appointment_time").eq("appointment_date",dia);
+
+const ocupados=new Set(
+(reservas||[]).map(r=>String(r.appointment_time).slice(0,5))
+);
+
+const {data:existentes,error:ee}=await db
+.from("blocked_slots")
+.select("appointment_time")
+.eq("appointment_date",dia);
+
 if(ee)throw ee;
-const bloqueados=new Set((existentes||[]).map(r=>String(r.appointment_time).slice(0,5)));
+
+const bloqueados=new Set(
+(existentes||[]).map(r=>String(r.appointment_time).slice(0,5))
+);
+
 const novos=hs.filter(h=>!ocupados.has(h)&&!bloqueados.has(h));
+
 if(novos.length){
-const {error}=await db.from("blocked_slots").insert(novos.map(h=>({appointment_date:dia,appointment_time:h,reason:motivo||"Dia inteiro"})));
+const {error}=await db.from("blocked_slots").insert(
+novos.map(h=>({
+appointment_date:dia,
+appointment_time:h,
+reason:motivo||"Dia inteiro"
+}))
+);
+
 if(error)throw error;
 }
+
 const reservados=hs.filter(h=>ocupados.has(h)).length;
-mensagemBloqueio.textContent="Dia bloqueado! "+novos.length+" horário(s) bloqueado(s). "+reservados+" horário(s) com agendamentos ativos continuam ocupados; não foram cancelados.";
-$("motivoBloqueio").value="";await carregarBloqueios();
-}catch(err){console.error(err);mensagemBloqueio.textContent="Não foi possível concluir o bloqueio do dia. Confira a conexão e tente novamente."}
-finally{botaoBloquearDia.disabled=botaoBloqueio.disabled=botaoLiberarDia.disabled=false}
+
+mensagemBloqueio.textContent=
+"Dia bloqueado! "+novos.length+" horário(s) bloqueado(s). "+
+reservados+" horário(s) com agendamentos ativos continuam ocupados; não foram cancelados.";
+
+$("motivoBloqueio").value="";
+await carregarBloqueios();
+
+}catch(err){
+console.error(err);
+mensagemBloqueio.textContent="Não foi possível concluir o bloqueio do dia. Confira a conexão e tente novamente.";
+}finally{
+botaoBloquearDia.disabled=botaoBloqueio.disabled=botaoLiberarDia.disabled=false;
+}
 }
 
 async function liberarDiaInteiro(){
 const dia=dataBloqueio.value;
-if(!dia){mensagemBloqueio.textContent="Escolha a data que deseja liberar.";return}
+
+if(!dia){
+mensagemBloqueio.textContent="Escolha a data que deseja liberar.";
+return;
+}
+
 if(!confirm("Confirma remover todos os bloqueios manuais da data "+dia+"? Agendamentos ativos continuarão ocupando seus horários."))return;
+
 botaoLiberarDia.disabled=botaoBloquearDia.disabled=botaoBloqueio.disabled=true;
 mensagemBloqueio.textContent="Removendo bloqueios da data...";
+
 try{
-const {data:rem,error}=await db.from("blocked_slots").delete().eq("appointment_date",dia).select("id");
+const {data:rem,error}=await db
+.from("blocked_slots")
+.delete()
+.eq("appointment_date",dia)
+.select("id");
+
 if(error)throw error;
-mensagemBloqueio.textContent=(rem||[]).length+" bloqueio(s) removido(s). Agendamentos ativos continuam ocupando seus horários.";
+
+mensagemBloqueio.textContent=
+(rem||[]).length+" bloqueio(s) removido(s). Agendamentos ativos continuam ocupando seus horários.";
+
 await carregarBloqueios();
-}catch(err){console.error(err);mensagemBloqueio.textContent="Não foi possível liberar os bloqueios desta data."}
-finally{botaoLiberarDia.disabled=botaoBloquearDia.disabled=botaoBloqueio.disabled=false}
+
+}catch(err){
+console.error(err);
+mensagemBloqueio.textContent="Não foi possível liberar os bloqueios desta data.";
+}finally{
+botaoLiberarDia.disabled=botaoBloquearDia.disabled=botaoBloqueio.disabled=false;
+}
 }
 
 async function carregarBloqueios(){
 listaBloqueios.textContent="Carregando bloqueios...";
-const {data:itens,error}=await db.from("blocked_slots").select("id,appointment_date,appointment_time,reason").order("appointment_date").order("appointment_time");
-if(error){console.error(error);listaBloqueios.textContent="Não foi possível carregar os bloqueios.";return}
+
+const {data:itens,error}=await db
+.from("blocked_slots")
+.select("id,appointment_date,appointment_time,reason")
+.order("appointment_date")
+.order("appointment_time");
+
+if(error){
+console.error(error);
+listaBloqueios.textContent="Não foi possível carregar os bloqueios.";
+return;
+}
+
 listaBloqueios.replaceChildren();
-if(!itens?.length){listaBloqueios.textContent="Nenhum horário bloqueado.";return}
+
+if(!itens?.length){
+listaBloqueios.textContent="Nenhum horário bloqueado.";
+return;
+}
+
 itens.forEach(i=>{
-const c=document.createElement("div");c.className="blocked-edit";
+const c=document.createElement("div");
+c.className="blocked-edit";
+
 linha(c,"Data",i.appointment_date);
 linha(c,"Horário",String(i.appointment_time||"").slice(0,5));
 linha(c,"Motivo",i.reason||"Não informado");
-const b=document.createElement("button");b.type="button";b.className="perigo";b.textContent="Remover bloqueio";
+
+const b=document.createElement("button");
+b.type="button";
+b.className="perigo";
+b.textContent="Remover bloqueio";
+
 b.addEventListener("click",async()=>{
 if(!confirm("Deseja liberar este horário?"))return;
+
 b.disabled=true;
-const {error:err}=await db.from("blocked_slots").delete().eq("id",i.id);
-if(err){console.error(err);mensagemBloqueio.textContent="Não foi possível remover o bloqueio.";b.disabled=false;return}
-mensagemBloqueio.textContent="Bloqueio removido.";await carregarBloqueios();
+
+const {error:err}=await db
+.from("blocked_slots")
+.delete()
+.eq("id",i.id);
+
+if(err){
+console.error(err);
+mensagemBloqueio.textContent="Não foi possível remover o bloqueio.";
+b.disabled=false;
+return;
+}
+
+mensagemBloqueio.textContent="Bloqueio removido.";
+await carregarBloqueios();
 });
-c.appendChild(b);listaBloqueios.appendChild(c);
+
+c.appendChild(b);
+listaBloqueios.appendChild(c);
 });
 }
 // AGENDAMENTOS
 async function carregarAgendamentos(){
 listaAgendamentos.textContent="Carregando agendamentos...";
-const {data:registros,error}=await db.from("bookings")
+
+const {data:registros,error}=await db
+.from("bookings")
 .select("id,client_name,client_phone,appointment_date,appointment_time,notes,status,services(name)")
 .order("appointment_date",{ascending:true})
 .order("appointment_time",{ascending:true});
 
-if(error){console.error(error);listaAgendamentos.textContent="Não foi possível carregar os agendamentos. Confira as permissões.";return}
+if(error){
+console.error(error);
+listaAgendamentos.textContent="Não foi possível carregar os agendamentos. Confira as permissões.";
+return;
+}
+
 listaAgendamentos.replaceChildren();
-if(!registros?.length){listaAgendamentos.textContent="Ainda não há agendamentos.";return}
+
+if(!registros?.length){
+listaAgendamentos.textContent="Ainda não há agendamentos.";
+return;
+}
 
 registros.forEach(r=>{
-const c=document.createElement("article");c.className="booking";
+const c=document.createElement("article");
+c.className="booking";
+
 linha(c,"Cliente",r.client_name);
 linha(c,"WhatsApp",r.client_phone);
 linha(c,"Serviço",r.services?.name||"Serviço");
@@ -292,23 +830,38 @@ st.className="status";
 st.textContent="Status: "+r.status;
 c.appendChild(st);
 
-const a=document.createElement("div");a.className="acoes";
+const a=document.createElement("div");
+a.className="acoes";
+
 const ok=document.createElement("button");
-ok.type="button";ok.textContent="Confirmar";
+ok.type="button";
+ok.textContent="Confirmar";
 ok.addEventListener("click",()=>alterarStatus(r.id,"confirmed"));
 
 const no=document.createElement("button");
-no.type="button";no.className="perigo";no.textContent="Cancelar";
+no.type="button";
+no.className="perigo";
+no.textContent="Cancelar";
 no.addEventListener("click",()=>alterarStatus(r.id,"cancelled"));
 
-a.append(ok,no);c.appendChild(a);
+a.append(ok,no);
+c.appendChild(a);
 listaAgendamentos.appendChild(c);
 });
 }
 
 async function alterarStatus(id,status){
-const {error}=await db.from("bookings").update({status}).eq("id",id);
-if(error){console.error(error);adminMensagem.textContent="Não foi possível atualizar o agendamento.";return}
+const {error}=await db
+.from("bookings")
+.update({status})
+.eq("id",id);
+
+if(error){
+console.error(error);
+adminMensagem.textContent="Não foi possível atualizar o agendamento.";
+return;
+}
+
 adminMensagem.textContent="Agendamento atualizado.";
 await carregarAgendamentos();
 }
@@ -316,6 +869,7 @@ await carregarAgendamentos();
 // LOGIN
 loginForm.addEventListener("submit",async e=>{
 e.preventDefault();
+
 const email=$("adminEmail").value.trim();
 const password=$("adminSenha").value;
 const entrar=$("entrarAdmin");
@@ -325,9 +879,11 @@ adminMensagem.textContent="Verificando acesso...";
 
 try{
 const {error}=await db.auth.signInWithPassword({email,password});
+
 if(error)throw error;
 
 const {data:ehAdmin,error:ae}=await db.rpc("is_barbearia_admin");
+
 if(ae||ehAdmin!==true){
 await db.auth.signOut();
 throw new Error("Esta conta não está cadastrada como administradora da Barbearia do Gaúcho.");
@@ -335,6 +891,7 @@ throw new Error("Esta conta não está cadastrada como administradora da Barbear
 
 adminMensagem.textContent="Acesso autorizado.";
 mostrarPainel(true);
+
 await carregarPrecos();
 await carregarBloqueios();
 await carregarAgendamentos();
@@ -342,8 +899,9 @@ await carregarAgendamentos();
 }catch(err){
 console.error(err);
 adminMensagem.textContent=err.message||"Não foi possível entrar. Confira o e-mail e a senha.";
+}finally{
+entrar.disabled=false;
 }
-finally{entrar.disabled=false}
 });
 
 // BOTÕES DO PAINEL
@@ -355,12 +913,16 @@ $("atualizarLista").addEventListener("click",carregarAgendamentos);
 
 $("sairAdmin").addEventListener("click",async()=>{
 await db.auth.signOut();
+
 mostrarPainel(false);
 adminMensagem.textContent="Você saiu do painel.";
+
 listaAgendamentos.replaceChildren();
 listaPrecos.replaceChildren();
 listaBloqueios.replaceChildren();
+
 mensagemBloqueio.textContent="";
+$("mensagemNovoServico").textContent="";
 });
 
 mostrarPainel(false);
