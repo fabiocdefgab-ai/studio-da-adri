@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#080808">
 <title>Barbearia do Gaúcho</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101010;color:#f5f5f5;font-family:Arial,sans-serif}
@@ -47,6 +48,7 @@ header h1{font-size:25px}
 }
 </style>
 </head>
+
 <body>
 
 <header>
@@ -68,6 +70,7 @@ header h1{font-size:25px}
 
 <label>Escolha um ou mais serviços</label>
 <p class="intro">Você pode selecionar vários serviços. O valor total será calculado automaticamente.</p>
+
 <div id="listaServicos" class="lista-servicos">
 Carregando serviços...
 </div>
@@ -90,6 +93,7 @@ Total do pedido
 
 <button id="enviar" type="submit">Solicitar agendamento</button>
 </form>
+
 <div id="mensagem" role="status" aria-live="polite"></div>
 </main>
 
@@ -100,8 +104,10 @@ Total do pedido
 <form id="loginForm">
 <label for="adminEmail">E-mail</label>
 <input id="adminEmail" type="email" autocomplete="username" required placeholder="E-mail do administrador">
+
 <label for="adminSenha">Senha</label>
 <input id="adminSenha" type="password" autocomplete="current-password" required placeholder="Sua senha">
+
 <button id="entrarAdmin" type="submit">Entrar no painel</button>
 </form>
 
@@ -114,28 +120,37 @@ Total do pedido
 
 <h2 style="margin-top:28px">Cadastrar novo serviço</h2>
 <p class="intro">Adicione serviços e preços diretamente pelo painel administrativo.</p>
+
 <form id="novoServicoForm">
 <label for="novoServicoNome">Nome do serviço</label>
 <input id="novoServicoNome" type="text" maxlength="100" required placeholder="Ex.: Sobrancelha na navalha">
+
 <label for="novoServicoPreco">Preço em reais</label>
 <input id="novoServicoPreco" type="number" min="0.01" step="0.01" required placeholder="Ex.: 5">
+
 <label for="novoServicoTipo">Tipo de preço</label>
 <select id="novoServicoTipo" required>
 <option value="fixed">Preço fixo</option>
 <option value="starting">A partir de</option>
 </select>
+
 <button id="cadastrarServico" type="submit">Cadastrar serviço</button>
 </form>
+
 <div id="mensagemNovoServico" role="status" aria-live="polite"></div>
 
 <h2 style="margin-top:28px">Bloquear horários</h2>
 <p class="intro">Bloqueie um horário ou todos os horários de uma data. Agendamentos existentes não são cancelados.</p>
+
 <label for="dataBloqueio">Data</label>
 <input id="dataBloqueio" type="date">
+
 <label for="horaBloqueio">Horário (bloqueio individual)</label>
 <input id="horaBloqueio" type="time" step="1800">
+
 <label for="motivoBloqueio">Motivo (opcional)</label>
 <input id="motivoBloqueio" type="text" maxlength="100" placeholder="Ex.: Feriado ou folga">
+
 <button id="salvarBloqueio" type="button">Bloquear apenas este horário</button>
 
 <div class="grupo-feriado">
@@ -144,12 +159,14 @@ Total do pedido
 <button id="bloquearDia" type="button">Bloquear todos os horários deste dia</button>
 <button id="liberarDia" class="secundario" type="button">Liberar todos os bloqueios desta data</button>
 </div>
+
 <div id="mensagemBloqueio" role="status" aria-live="polite"></div>
 <div id="listaBloqueios"></div>
 
 <h2 style="margin-top:28px">Agendamentos</h2>
 <button id="atualizarLista" class="secundario" type="button">Atualizar agendamentos</button>
 <div id="listaAgendamentos"></div>
+
 <button id="sairAdmin" class="secundario" type="button">Sair do painel</button>
 </div>
 </section>
@@ -185,13 +202,13 @@ return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate(
 
 data.min=dataHojeLocal();
 
-function formatarPreco(v,n){
-const p=Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-return n==="starting"?"A partir de "+p:p;
-}
-
 function dinheiro(v){
 return Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+}
+
+function formatarPreco(v,tipo){
+const preco=dinheiro(v);
+return tipo==="starting"?"A partir de "+preco:preco;
 }
 
 function servicosSelecionados(){
@@ -203,8 +220,9 @@ return [...listaServicos.querySelectorAll('input[type="checkbox"]:checked')]
 function atualizarTotal(){
 const selecionados=servicosSelecionados();
 const total=selecionados.reduce((s,i)=>s+Number(i.price),0);
-totalPedido.textContent=dinheiro(total);
-return {selecionados,total};
+const estimado=selecionados.some(s=>s.price_note==="starting");
+totalPedido.textContent=dinheiro(total)+(estimado?" (estimado)":"");
+return {selecionados,total,estimado};
 }
 
 async function carregarServicos(){
@@ -289,6 +307,7 @@ return;
 }
 
 const indisponiveis=new Set((ocupados||[]).map(x=>String(x.horario).slice(0,5)));
+
 let qtd=0;
 
 for(let m=abertura;m<=fechamento;m+=30){
@@ -305,7 +324,9 @@ horario.appendChild(o);
 qtd++;
 }
 
-if(!qtd)horario.innerHTML='<option value="">Não há horários disponíveis nesta data</option>';
+if(!qtd){
+horario.innerHTML='<option value="">Não há horários disponíveis nesta data</option>';
+}
 }
 
 data.addEventListener("change",carregarHorarios);
@@ -320,7 +341,7 @@ mensagem.textContent="Escolha uma data de hoje ou futura.";
 return;
 }
 
-const {selecionados,total}=atualizarTotal();
+const {selecionados,total,estimado}=atualizarTotal();
 
 if(!selecionados.length){
 mensagem.textContent="Selecione pelo menos um serviço.";
@@ -394,7 +415,7 @@ const texto=encodeURIComponent(
 "Nome: "+nome+"\n"+
 "Telefone: "+telefone+"\n"+
 "Serviços:\n"+listaTexto+"\n"+
-"Total: "+dinheiro(total)+"\n"+
+"Total: "+dinheiro(total)+(estimado?" (estimado)":"")+"\n"+
 "Data: "+data.value+"\n"+
 "Horário: "+horario.value+"\n"+
 "Observações: "+(obs||"Nenhuma")
@@ -428,6 +449,7 @@ const adminMensagem=$("adminMensagem");
 const painelAdmin=$("painelAdmin");
 const listaAgendamentos=$("listaAgendamentos");
 const listaPrecos=$("listaPrecos");
+const listaBloqueios=$("listaBloqueios");
 
 function mostrarPainel(ok){
 loginForm.hidden=ok;
@@ -442,6 +464,7 @@ p.append(b,document.createTextNode(v||"—"));
 c.appendChild(p);
 }
 
+// PREÇOS
 async function carregarPrecos(){
 listaPrecos.textContent="Carregando serviços...";
 
@@ -475,8 +498,7 @@ inp.setAttribute("aria-label","Preço de "+i.name);
 const hint=document.createElement("div");
 hint.className="price-hint";
 hint.textContent=i.price_note==="starting"?
-"O site mostrará “A partir de” antes do preço.":
-"Preço fixo";
+"O site mostrará “A partir de” antes do preço.":"Preço fixo";
 
 const btn=document.createElement("button");
 btn.type="button";
@@ -579,13 +601,7 @@ botaoCadastro.disabled=false;
 });
 // BLOQUEIOS DE HORÁRIOS
 
-const bloquearForm=$("bloquearForm");
-const bloquearMensagem=$("bloquearMensagem");
-const listaBloqueios=$("listaBloqueios");
-
 async function carregarBloqueios(){
-if(!listaBloqueios)return;
-
 listaBloqueios.textContent="Carregando bloqueios...";
 
 const {data:itens,error}=await db
@@ -609,18 +625,21 @@ return;
 
 itens.forEach(item=>{
 const card=document.createElement("div");
-card.className="admin-card";
+card.className="blocked-edit";
 
 linha(card,"Data",item.appointment_date);
-linha(card,"Horário",item.appointment_time||"Dia inteiro");
+linha(card,"Horário",item.appointment_time?String(item.appointment_time).slice(0,5):"Dia inteiro");
 linha(card,"Motivo",item.reason||"Bloqueio administrativo");
 
 const btn=document.createElement("button");
 btn.type="button";
+btn.className="secundario";
 btn.textContent="Desbloquear";
 
 btn.addEventListener("click",async()=>{
 if(!confirm("Deseja desbloquear este horário?"))return;
+
+btn.disabled=true;
 
 const {error:err}=await db
 .from("blocked_slots")
@@ -629,11 +648,12 @@ const {error:err}=await db
 
 if(err){
 console.error(err);
-bloquearMensagem.textContent="Não foi possível desbloquear.";
+btn.disabled=false;
+$("mensagemBloqueio").textContent="Não foi possível desbloquear.";
 return;
 }
 
-bloquearMensagem.textContent="Horário desbloqueado.";
+$("mensagemBloqueio").textContent="Horário desbloqueado.";
 await carregarBloqueios();
 });
 
@@ -642,50 +662,59 @@ listaBloqueios.appendChild(card);
 });
 }
 
-if(bloquearForm){
-bloquearForm.addEventListener("submit",async e=>{
-e.preventDefault();
-
+// BLOQUEAR UM HORÁRIO
+$("salvarBloqueio").addEventListener("click",async()=>{
 const dia=$("dataBloqueio").value;
 const hora=$("horaBloqueio").value;
-const motivo=$("motivoBloqueio")?.value.trim()||"Bloqueio administrativo";
+const motivo=$("motivoBloqueio").value.trim()||"Bloqueio administrativo";
+const aviso=$("mensagemBloqueio");
 
-if(!dia){
-bloquearMensagem.textContent="Escolha uma data.";
+if(!dia||!hora){
+aviso.textContent="Escolha a data e o horário.";
 return;
 }
 
-const dados={
-appointment_date:dia,
-appointment_time:hora||null,
-reason:motivo
-};
+if(!/^([01]\d|2[0-3]):(00|30)$/.test(hora)){
+aviso.textContent="Escolha um horário válido, de 30 em 30 minutos.";
+return;
+}
 
-const {error}=await db.from("blocked_slots").insert(dados);
+const btn=$("salvarBloqueio");
+btn.disabled=true;
+aviso.textContent="Registrando bloqueio...";
+
+const {error}=await db.from("blocked_slots").insert({
+appointment_date:dia,
+appointment_time:hora,
+reason:motivo
+});
+
+btn.disabled=false;
 
 if(error){
 console.error(error);
-bloquearMensagem.textContent="Não foi possível bloquear. Confira se o horário já está bloqueado.";
+aviso.textContent="Não foi possível bloquear. Confira se esse horário já está bloqueado.";
 return;
 }
 
-bloquearMensagem.textContent="Bloqueio registrado.";
-bloquearForm.reset();
+aviso.textContent="Horário bloqueado com sucesso.";
+$("horaBloqueio").value="";
 await carregarBloqueios();
 });
-}
 
 // BLOQUEAR O DIA INTEIRO
-const bloquearDia=$("bloquearDia");
-
-if(bloquearDia){
-bloquearDia.addEventListener("click",async()=>{
+$("bloquearDia").addEventListener("click",async()=>{
 const dia=$("dataBloqueio").value;
+const aviso=$("mensagemBloqueio");
+const btn=$("bloquearDia");
 
 if(!dia){
-bloquearMensagem.textContent="Escolha a data primeiro.";
+aviso.textContent="Escolha a data primeiro.";
 return;
 }
+
+btn.disabled=true;
+aviso.textContent="Registrando bloqueio do dia...";
 
 const {error}=await db.from("blocked_slots").insert({
 appointment_date:dia,
@@ -693,39 +722,50 @@ appointment_time:null,
 reason:"Dia inteiro bloqueado"
 });
 
+btn.disabled=false;
+
 if(error){
 console.error(error);
-bloquearMensagem.textContent="Não foi possível bloquear o dia.";
+aviso.textContent="Não foi possível bloquear o dia. Confira se já existe um bloqueio.";
 return;
 }
 
-bloquearMensagem.textContent="Dia bloqueado com sucesso.";
+aviso.textContent="Dia bloqueado com sucesso.";
 await carregarBloqueios();
 });
+
+// LIBERAR SOMENTE OS BLOQUEIOS DA DATA ESCOLHIDA
+$("liberarDia").addEventListener("click",async()=>{
+const dia=$("dataBloqueio").value;
+const aviso=$("mensagemBloqueio");
+const btn=$("liberarDia");
+
+if(!dia){
+aviso.textContent="Escolha a data primeiro.";
+return;
 }
 
-// DESBLOQUEAR TODOS
-const desbloquearTodos=$("desbloquearTodos");
+if(!confirm("Deseja liberar todos os bloqueios da data "+dia+"?"))return;
 
-if(desbloquearTodos){
-desbloquearTodos.addEventListener("click",async()=>{
-if(!confirm("Deseja remover todos os bloqueios?"))return;
+btn.disabled=true;
+aviso.textContent="Liberando bloqueios...";
 
 const {error}=await db
 .from("blocked_slots")
 .delete()
-.gte("appointment_date","1900-01-01");
+.eq("appointment_date",dia);
+
+btn.disabled=false;
 
 if(error){
 console.error(error);
-bloquearMensagem.textContent="Não foi possível remover os bloqueios.";
+aviso.textContent="Não foi possível liberar os bloqueios.";
 return;
 }
 
-bloquearMensagem.textContent="Bloqueios removidos.";
+aviso.textContent="Bloqueios da data "+dia+" liberados.";
 await carregarBloqueios();
 });
-}
 
 // AGENDAMENTOS DO ADMINISTRADOR
 
@@ -734,7 +774,7 @@ listaAgendamentos.textContent="Carregando agendamentos...";
 
 const {data:itens,error}=await db
 .from("bookings")
-.select("id,client_name,client_phone,appointment_date,appointment_time,notes,status,services(name),booking_services(service_name,price)")
+.select("id,client_name,client_phone,appointment_date,appointment_time,notes,status,services(name,price),booking_services(service_name,price)")
 .order("appointment_date",{ascending:true})
 .order("appointment_time",{ascending:true});
 
@@ -753,15 +793,17 @@ return;
 
 itens.forEach(r=>{
 const card=document.createElement("div");
-card.className="admin-card";
+card.className="booking";
 
 linha(card,"Cliente",r.client_name);
 linha(card,"WhatsApp",r.client_phone);
 linha(card,"Data",r.appointment_date);
 linha(card,"Horário",String(r.appointment_time||"").slice(0,5));
 
-const titulo=document.createElement("strong");
-titulo.textContent="Serviços:";
+const titulo=document.createElement("p");
+const forte=document.createElement("strong");
+forte.textContent="Serviços:";
+titulo.appendChild(forte);
 card.appendChild(titulo);
 
 let total=0;
@@ -771,8 +813,11 @@ r.booking_services.forEach(s=>{
 total+=Number(s.price);
 linha(card,s.service_name,dinheiro(s.price));
 });
+}else if(r.services){
+total=Number(r.services.price||0);
+linha(card,"Serviço",r.services.name);
 }else{
-linha(card,"Serviço",r.services?.name||"Serviço não informado");
+linha(card,"Serviço","Não informado");
 }
 
 linha(card,"Total dos serviços",dinheiro(total));
@@ -780,18 +825,17 @@ linha(card,"Observações",r.notes);
 linha(card,"Situação",r.status);
 
 const acoes=document.createElement("div");
-acoes.className="admin-actions";
+acoes.className="acoes";
 
 const confirmar=document.createElement("button");
 confirmar.type="button";
 confirmar.textContent="Confirmar";
-
 confirmar.addEventListener("click",()=>alterarStatus(r.id,"confirmed"));
 
 const cancelar=document.createElement("button");
 cancelar.type="button";
+cancelar.className="perigo";
 cancelar.textContent="Cancelar";
-
 cancelar.addEventListener("click",()=>alterarStatus(r.id,"cancelled"));
 
 acoes.append(confirmar,cancelar);
@@ -800,6 +844,8 @@ card.appendChild(acoes);
 listaAgendamentos.appendChild(card);
 });
 }
+
+// ALTERAR SITUAÇÃO DO AGENDAMENTO
 
 async function alterarStatus(id,status){
 const {error}=await db
@@ -813,7 +859,10 @@ adminMensagem.textContent="Não foi possível atualizar o agendamento.";
 return;
 }
 
-adminMensagem.textContent="Agendamento atualizado.";
+adminMensagem.textContent=status==="confirmed"?
+"Agendamento confirmado!":
+"Agendamento cancelado.";
+
 await carregarAgendamentos();
 }
 
@@ -822,18 +871,20 @@ await carregarAgendamentos();
 loginForm.addEventListener("submit",async e=>{
 e.preventDefault();
 
+const entrar=$("entrarAdmin");
+entrar.disabled=true;
 adminMensagem.textContent="Verificando acesso...";
 
 const email=$("adminEmail").value.trim();
 const senha=$("adminSenha").value;
 
-const {data,error}=await db.auth.signInWithPassword({
+try{
+const {error}=await db.auth.signInWithPassword({
 email,
 password:senha
 });
 
 if(error){
-console.error(error);
 adminMensagem.textContent="E-mail ou senha incorretos.";
 return;
 }
@@ -852,31 +903,45 @@ adminMensagem.textContent="Acesso autorizado.";
 await carregarAgendamentos();
 await carregarPrecos();
 await carregarBloqueios();
+
+}catch(err){
+console.error(err);
+adminMensagem.textContent="Erro ao verificar o acesso. Tente novamente.";
+}finally{
+entrar.disabled=false;
+}
 });
 
-// ATUALIZAÇÃO DOS DADOS
+// ATUALIZAR DADOS DO PAINEL
 
-const atualizarAdmin=$("atualizarAdmin");
+$("atualizarLista").addEventListener("click",async()=>{
+const btn=$("atualizarLista");
+btn.disabled=true;
 
-if(atualizarAdmin){
-atualizarAdmin.addEventListener("click",async()=>{
 await carregarAgendamentos();
 await carregarPrecos();
 await carregarBloqueios();
+
+btn.disabled=false;
+adminMensagem.textContent="Informações atualizadas.";
 });
-}
 
 // SAIR DO PAINEL
 
-const sairAdmin=$("sairAdmin");
+$("sairAdmin").addEventListener("click",async()=>{
+const {error}=await db.auth.signOut();
 
-if(sairAdmin){
-sairAdmin.addEventListener("click",async()=>{
-await db.auth.signOut();
+if(error){
+console.error(error);
+adminMensagem.textContent="Não foi possível sair do painel.";
+return;
+}
+
 mostrarPainel(false);
 adminMensagem.textContent="Você saiu do painel administrativo.";
 });
-}
+
+// INICIALIZAÇÃO
 
 mostrarPainel(false);
 carregarServicos();
