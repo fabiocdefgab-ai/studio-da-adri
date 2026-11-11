@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -56,32 +57,69 @@
       <a id="whatsButton" class="button whats" target="_blank" rel="noopener">Avisar a barbearia pelo WhatsApp</a>
     </div>
   </section>
+</main>
 
   <section class="panel hidden" id="adminPanel">
     <h2>Área administrativa</h2>
     <div id="loginArea">
       <label for="adminEmail">E-mail</label><input id="adminEmail" type="email" autocomplete="username">
       <label for="adminPassword">Senha</label><input id="adminPassword" type="password" autocomplete="current-password">
-      <button class="gold" id="loginBtn">Entrar</button><p id="loginMessage" class="notice"></p>
+      <button class="gold" id="loginBtn">Entrar</button>
+      <p id="loginMessage" class="notice"></p>
     </div>
     <div id="adminArea" class="hidden">
-      <div class="actions"><button class="mutedbtn" id="refreshBtn">Atualizar listas</button><button class="mutedbtn" id="logoutBtn">Sair</button></div>
-      <div class="adminsection"><h2>Agendamentos</h2><div id="appointments">Carregando...</div></div>
-      <div class="adminsection"><h2>Bloquear horário ou dia</h2>
-        <label for="blockDate">Data</label><input type="date" id="blockDate">
-        <label for="blockTime">Horário (deixe em branco para bloquear o dia todo)</label><select id="blockTime"><option value="">Dia inteiro</option></select>
-        <label for="blockReason">Motivo (opcional)</label><input id="blockReason" maxlength="150">
-        <div class="actions"><button class="gold" id="blockBtn">Bloquear</button><button class="mutedbtn" id="showBlocksBtn">Ver bloqueios</button></div><div id="blocks"></div>
+      <div class="actions">
+        <button class="mutedbtn" id="refreshBtn">Atualizar listas</button>
+        <button class="mutedbtn" id="logoutBtn">Sair</button>
       </div>
-      <div class="adminsection"><h2>Serviços e preços</h2><div id="servicesAdmin"></div>
-        <label for="newServiceName">Novo serviço</label><input id="newServiceName" maxlength="80" placeholder="Nome do serviço">
-        <div class="grid"><div><label for="newServicePrice">Preço em reais</label><input id="newServicePrice" type="number" min="0" step="0.01"></div><div><label for="newServiceNote">Tipo de preço</label><select id="newServiceNote"><option value="fixed">Preço fixo</option><option value="starting">A partir de</option></select></div></div>
-        <button class="gold" id="addServiceBtn">Adicionar serviço</button><p id="serviceAdminMessage" class="notice"></p>
+      <div class="adminsection">
+        <h2>Agendamentos</h2>
+        <div id="appointments">Carregando...</div>
+      </div>
+      <div class="adminsection">
+        <h2>Bloquear horário ou dia</h2>
+        <label for="blockDate">Data</label><input type="date" id="blockDate">
+        <label for="blockTime">Horário (deixe em branco para bloquear o dia todo)</label>
+        <select id="blockTime"><option value="">Dia inteiro</option></select>
+        <label for="blockReason">Motivo (opcional)</label><input id="blockReason" maxlength="150">
+        <div class="actions">
+          <button class="gold" id="blockBtn">Bloquear</button>
+          <button class="mutedbtn" id="showBlocksBtn">Ver bloqueios</button>
+        </div>
+        <div id="blocks"></div>
+      </div>
+      <div class="adminsection">
+        <h2>Serviços e preços</h2>
+        <div id="servicesAdmin"></div>
+        <label for="newServiceName">Novo serviço</label>
+        <input id="newServiceName" maxlength="80" placeholder="Nome do serviço">
+        <div class="grid">
+          <div>
+            <label for="newServicePrice">Preço em reais</label>
+            <input id="newServicePrice" type="number" min="0" step="0.01">
+          </div>
+          <div>
+            <label for="newServiceNote">Tipo de preço</label>
+            <select id="newServiceNote">
+              <option value="fixed">Preço fixo</option>
+              <option value="starting">A partir de</option>
+            </select>
+          </div>
+        </div>
+        <button class="gold" id="addServiceBtn">Adicionar serviço</button>
+        <p id="serviceAdminMessage" class="notice"></p>
       </div>
     </div>
   </section>
   <a class="adminlink" id="adminToggle">Acesso administrativo</a>
 </main>
+
+<footer style="text-align:center;padding:25px 15px;color:#d6b36a;background:#050505;font-size:14px;line-height:1.8;border-top:1px solid #9d7b3e">
+  © 2026 Barbearia do Gaúcho<br>
+  Tradição, estilo e qualidade desde 1998.<br>
+  Atendimento mediante agendamento.
+</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (() => {
@@ -93,56 +131,131 @@
   let serviceList = [], adminUser = null;
 
   const money = value => Number(value || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-  const dateLocal = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
-  const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-  function setMessage(id,text,kind="notice"){ $(id).textContent=text; $(id).className=kind; }
+  const dateLocal = () => {
+    const d = new Date();
+    d.setMinutes(d.getMinutes()-d.getTimezoneOffset());
+    return d.toISOString().slice(0,10);
+  };
+  const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+  function setMessage(id,text,kind="notice"){
+    $(id).textContent=text;
+    $(id).className=kind;
+  }
 
   function timesForDate(date){
-    if(!date) return [];
-    const day = new Date(date+"T12:00:00").getDay();
-    if(day===0) return [];
-    const start = day===6 ? 8*60 : 8*60+30;
-    const end = day===6 ? 17*60 : 20*60;
+    if(!date)return [];
+    const day=new Date(date+"T12:00:00").getDay();
+    if(day===0)return [];
+    const start=day===6?8*60:8*60+30;
+    const end=day===6?17*60:20*60;
     const result=[];
-    for(let m=start;m<end;m+=30) result.push(String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"));
+    for(let m=start;m<end;m+=30){
+      result.push(String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"));
+    }
     return result;
   }
+
   async function loadServices(){
-    const {data,error}=await db.from("services").select("id,name,price,price_note,is_active").eq("is_active",true).order("name");
-    if(error){$("service").innerHTML='<option value="">Não foi possível carregar</option>';return;}
+    const {data,error}=await db.from("services")
+      .select("id,name,price,price_note,is_active")
+      .eq("is_active",true).order("name");
+    if(error){
+      $("service").innerHTML='<option value="">Não foi possível carregar</option>';
+      return;
+    }
     serviceList=data||[];
-    $("service").innerHTML='<option value="">Selecione o serviço</option>'+serviceList.map(s=>`<option value="${s.id}">${escapeHTML(s.name)}</option>`).join("");
+    $("service").innerHTML='<option value="">Selecione o serviço</option>'+
+      serviceList.map(s=>`<option value="${s.id}">${escapeHTML(s.name)}</option>`).join("");
   }
+
   $("service").addEventListener("change",()=>{
     const s=serviceList.find(x=>String(x.id)===$("service").value);
-    $("servicePrice").textContent=s?(s.price_note==="starting"?"A partir de ":"")+money(s.price):"Selecione um serviço para ver o preço.";
+    $("servicePrice").textContent=s?
+      (s.price_note==="starting"?"A partir de ":"")+money(s.price):
+      "Selecione um serviço para ver o preço.";
   });
+
   async function loadTimes(){
-    const date=$("date").value, select=$("time");
+    const date=$("date").value,select=$("time");
     select.innerHTML='<option value="">Carregando horários...</option>';
-    if(!date){select.innerHTML='<option value="">Escolha a data primeiro</option>';return;}
-    if(new Date(date+"T12:00:00").getDay()===0){select.innerHTML='<option value="">Fechado aos domingos</option>';return;}
+    if(!date){
+      select.innerHTML='<option value="">Escolha a data primeiro</option>';
+      return;
+    }
+    if(date<dateLocal()){
+      select.innerHTML='<option value="">Escolha uma data válida</option>';
+      return;
+    }
+    if(new Date(date+"T12:00:00").getDay()===0){
+      select.innerHTML='<option value="">Fechado aos domingos</option>';
+      return;
+    }
     const {data:busy,error}=await db.rpc("horarios_ocupados",{p_data:date});
-    if(error){select.innerHTML='<option value="">Erro ao consultar horários</option>';return;}
+    if(error){
+      select.innerHTML='<option value="">Erro ao consultar horários</option>';
+      return;
+    }
     const occupied=new Set((busy||[]).map(x=>String(x.horario).slice(0,5)));
-    const {data:blocked}=await db.from("blocked_slots").select("appointment_time").eq("appointment_date",date);
-    const blockedTimes=new Set((blocked||[]).filter(x=>x.appointment_time).map(x=>String(x.appointment_time).slice(0,5)));
+    const {data:blocked}=await db.from("blocked_slots")
+      .select("appointment_time").eq("appointment_date",date);
+    const blockedTimes=new Set((blocked||[])
+      .filter(x=>x.appointment_time)
+      .map(x=>String(x.appointment_time).slice(0,5)));
     const dayBlocked=(blocked||[]).some(x=>!x.appointment_time);
-    const available=timesForDate(date).filter(t=>!occupied.has(t)&&!blockedTimes.has(t));
-    select.innerHTML=dayBlocked?'<option value="">Dia bloqueado</option>':available.length?'<option value="">Selecione o horário</option>'+available.map(t=>`<option value="${t}">${t}</option>`).join(""):'<option value="">Sem horários disponíveis</option>';
+    const available=timesForDate(date)
+      .filter(t=>!occupied.has(t)&&!blockedTimes.has(t));
+    select.innerHTML=dayBlocked?
+      '<option value="">Dia bloqueado</option>':
+      available.length?
+      '<option value="">Selecione o horário</option>'+
+      available.map(t=>`<option value="${t}">${t}</option>`).join("") :
+      '<option value="">Sem horários disponíveis</option>';
   }
-  $("date").min=dateLocal(); $("date").addEventListener("change",loadTimes);
+
+  $("date").min=dateLocal();
+  $("date").addEventListener("change",loadTimes);
 
   $("bookingForm").addEventListener("submit",async e=>{
-    e.preventDefault(); $("bookBtn").disabled=true; $("whatsArea").classList.add("hidden"); setMessage("bookingMessage","Registrando seu pedido...");
+    e.preventDefault();
+    $("bookBtn").disabled=true;
+    $("whatsArea").classList.add("hidden");
+    setMessage("bookingMessage","Registrando seu pedido...");
+
     const service=serviceList.find(x=>String(x.id)===$("service").value);
-    if(!service){setMessage("bookingMessage","Selecione um serviço válido.","error");$("bookBtn").disabled=false;return;}
+    if(!service){
+      setMessage("bookingMessage","Selecione um serviço válido.","error");
+      $("bookBtn").disabled=false;
+      return;
+    }
+
     const date=$("date").value,time=$("time").value;
-    if(!date||!time){setMessage("bookingMessage","Escolha a data e o horário.","error");$("bookBtn").disabled=false;return;}
-    const payload={client_name:$("clientName").value.trim(),client_phone:$("clientPhone").value.trim(),service_id:service.id,appointment_date:date,appointment_time:time,notes:$("notes").value.trim(),status:"pending"};
-    const {data,error}=await db.from("bookings").insert(payload).select("id").single();
+    if(!date||!time){
+      setMessage("bookingMessage","Escolha a data e o horário.","error");
+      $("bookBtn").disabled=false;
+      return;
+    }
+
+    const payload={
+      client_name:$("clientName").value.trim(),
+      client_phone:$("clientPhone").value.trim(),
+      service_id:service.id,
+      appointment_date:date,
+      appointment_time:time,
+      notes:$("notes").value.trim(),
+      status:"pending"
+    };
+
+    // Registra sem solicitar a leitura do registro inserido.
+    const {error}=await db.from("bookings").insert(payload);
     $("bookBtn").disabled=false;
-    if(error){setMessage("bookingMessage","Não foi possível registrar. Confira os dados e tente novamente. ("+error.message+")","error");return;}
+
+    if(error){
+      setMessage("bookingMessage","Não foi possível registrar. Confira os dados e tente novamente. ("+error.message+")","error");
+      return;
+    }
+
     const priceText=(service.price_note==="starting"?"A partir de ":"")+money(service.price);
     const message=[
       "Olá! Fiz um pedido de agendamento na Barbearia do Gaúcho.",
@@ -152,72 +265,262 @@
       "Preço informado: "+priceText,
       "Data: "+date.split("-").reverse().join("/"),
       "Horário: "+time,
-      payload.notes?"Observações: "+payload.notes:"",
-      "Código do pedido: "+data.id
+      payload.notes?"Observações: "+payload.notes:""
     ].filter(Boolean).join("\n");
+
     $("whatsButton").href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(message);
     $("whatsArea").classList.remove("hidden");
-    $("bookingForm").reset(); $("servicePrice").textContent="Selecione um serviço para ver o preço."; $("time").innerHTML='<option value="">Escolha a data primeiro</option>';
+    $("bookingForm").reset();
+    $("servicePrice").textContent="Selecione um serviço para ver o preço.";
+    $("time").innerHTML='<option value="">Escolha a data primeiro</option>';
     setMessage("bookingMessage","Pedido registrado com sucesso!","success");
   });
 
-  $("adminToggle").onclick=()=>{$("adminPanel").classList.toggle("hidden");$("adminPanel").scrollIntoView({behavior:"smooth"});};
+  $("adminToggle").onclick=()=>{
+    $("adminPanel").classList.toggle("hidden");
+    $("adminPanel").scrollIntoView({behavior:"smooth"});
+  };
+
   $("loginBtn").onclick=async()=>{
     setMessage("loginMessage","Verificando acesso...");
-    const {data,error}=await db.auth.signInWithPassword({email:$("adminEmail").value,password:$("adminPassword").value});
-    if(error){setMessage("loginMessage","Não foi possível entrar. Confira e-mail e senha.","error");return;}
+    const {data,error}=await db.auth.signInWithPassword({
+      email:$("adminEmail").value,
+      password:$("adminPassword").value
+    });
+    if(error){
+      setMessage("loginMessage","Não foi possível entrar. Confira e-mail e senha.","error");
+      return;
+    }
     const {data:allowed,error:rpcError}=await db.rpc("is_barbearia_admin");
-    if(rpcError||!allowed){await db.auth.signOut();setMessage("loginMessage","Este usuário não tem permissão administrativa.","error");return;}
-    adminUser=data.user; showAdmin(); await refreshAdmin();
+    if(rpcError||!allowed){
+      await db.auth.signOut();
+      setMessage("loginMessage","Este usuário não tem permissão administrativa.","error");
+      return;
+    }
+    adminUser=data.user;
+    showAdmin();
+    await refreshAdmin();
   };
-  function showAdmin(){ $("loginArea").classList.add("hidden");$("adminArea").classList.remove("hidden"); }
-  $("logoutBtn").onclick=async()=>{await db.auth.signOut();adminUser=null;$("adminArea").classList.add("hidden");$("loginArea").classList.remove("hidden");};
+
+  function showAdmin(){
+    $("loginArea").classList.add("hidden");
+    $("adminArea").classList.remove("hidden");
+  }
+
+  $("logoutBtn").onclick=async()=>{
+    await db.auth.signOut();
+    adminUser=null;
+    $("adminArea").classList.add("hidden");
+    $("loginArea").classList.remove("hidden");
+  };
+
   $("refreshBtn").onclick=refreshAdmin;
 
-  async function refreshAdmin(){await Promise.all([loadAppointments(),loadAdminServices(),loadBlocks()]);}
+  async function refreshAdmin(){
+    await Promise.all([loadAppointments(),loadAdminServices(),loadBlocks()]);
+  }
+
   async function loadAppointments(){
     $("appointments").textContent="Carregando...";
-  const {data,error}=await db.from("bookings").select("id,client_name,client_phone,appointment_date,appointment_time,notes,status,services(name,price,price_note)").order("appointment_date",{ascending:true}).order("appointment_time",{ascending:true});
-    if(error){$("appointments").textContent="Erro ao carregar agendamentos: "+error.message;return;}
-    if(!data?.length){$("appointments").textContent="Nenhum agendamento encontrado.";return;}
+    const {data,error}=await db.from("bookings")
+      .select("id,client_name,client_phone,appointment_date,appointment_time,notes,status,services(name,price,price_note)")
+      .order("appointment_date",{ascending:true})
+      .order("appointment_time",{ascending:true});
+
+    if(error){
+      $("appointments").textContent="Erro ao carregar agendamentos: "+error.message;
+      return;
+    }
+    if(!data?.length){
+      $("appointments").textContent="Nenhum agendamento encontrado.";
+      return;
+    }
+
     $("appointments").innerHTML=data.map(b=>{
-    const services=b.services?`${escapeHTML(b.services.name)} — ${b.services.price_note==="starting"?"A partir de ":""}${money(b.services.price)}`:"Serviço não informado";
-      return `<div class="rowitem"><strong>${escapeHTML(b.client_name)}</strong> <span class="pill">${escapeHTML(b.status)}</span><br><small>${escapeHTML(b.appointment_date)} às ${escapeHTML(String(b.appointment_time).slice(0,5))}</small><br>${services}<br><small>WhatsApp: ${escapeHTML(b.client_phone)}${b.notes?"<br>Obs.: "+escapeHTML(b.notes):""}</small><div class="actions"><button class="gold" data-status="confirmed" data-id="${b.id}">Confirmar</button><button class="danger" data-status="cancelled" data-id="${b.id}">Cancelar</button></div></div>`;
+      const service=b.services?
+        `${escapeHTML(b.services.name)} — ${b.services.price_note==="starting"?"A partir de ":""}${money(b.services.price)}`:
+        "Serviço não informado";
+
+      return `<div class="rowitem">
+        <strong>${escapeHTML(b.client_name)}</strong>
+        <span class="pill">${escapeHTML(b.status)}</span><br>
+        <small>${escapeHTML(b.appointment_date)} às ${escapeHTML(String(b.appointment_time).slice(0,5))}</small><br>
+        ${service}<br>
+        <small>WhatsApp: ${escapeHTML(b.client_phone)}${b.notes?"<br>Obs.: "+escapeHTML(b.notes):""}</small>
+        <div class="actions">
+          <button class="gold" data-status="confirmed" data-id="${b.id}">Confirmar</button>
+          <button class="danger" data-status="cancelled" data-id="${b.id}">Cancelar</button>
+        </div>
+      </div>`;
     }).join("");
-    $("appointments").querySelectorAll("button[data-status]").forEach(btn=>btn.onclick=async()=>{
-      const {error}=await db.from("bookings").update({status:btn.dataset.status}).eq("id",btn.dataset.id);
-      if(error)alert("Não foi possível atualizar: "+error.message);else await loadAppointments();
+
+    $("appointments").querySelectorAll("button[data-status]").forEach(btn=>{
+      btn.onclick=async()=>{
+        const {error}=await db.from("bookings")
+          .update({status:btn.dataset.status}).eq("id",btn.dataset.id);
+        if(error)alert("Não foi possível atualizar: "+error.message);
+        else await loadAppointments();
+      };
     });
   }
-  function adminTimes(){return ["",...timesForDate($("blockDate").value)];}
-  $("blockDate").addEventListener("change",()=>{$("blockTime").innerHTML=adminTimes().map(t=>`<option value="${t}">${t||"Dia inteiro"}</option>`).join("");});
+
+  function adminTimes(){
+    return ["",...timesForDate($("blockDate").value)];
+  }
+
+  $("blockDate").addEventListener("change",()=>{
+    $("blockTime").innerHTML=adminTimes()
+      .map(t=>`<option value="${t}">${t||"Dia inteiro"}</option>`).join("");
+  });
+
   $("blockBtn").onclick=async()=>{
-    const date=$("blockDate").value;if(!date){alert("Escolha uma data.");return;}
-    const {error}=await db.from("blocked_slots").insert({appointment_date:date,appointment_time:$("blockTime").value||null,reason:$("blockReason").value.trim()||null});
-    if(error){alert("Não foi possível bloquear: "+error.message);return;}await loadBlocks();alert("Bloqueio registrado.");
+    const date=$("blockDate").value;
+    if(!date){
+      alert("Escolha uma data.");
+      return;
+    }
+    const {error}=await db.from("blocked_slots").insert({
+      appointment_date:date,
+      appointment_time:$("blockTime").value||null,
+      reason:$("blockReason").value.trim()||null
+    });
+    if(error){
+      alert("Não foi possível bloquear: "+error.message);
+      return;
+    }
+    await loadBlocks();
+    alert("Bloqueio registrado.");
   };
+
   async function loadBlocks(){
-    const {data,error}=await db.from("blocked_slots").select("id,appointment_date,appointment_time,reason").order("appointment_date");
-    if(error){$("blocks").textContent="Erro ao carregar bloqueios.";return;}
-    $("blocks").innerHTML=(data||[]).map(b=>`<div class="rowitem">${escapeHTML(b.appointment_date)} — ${b.appointment_time?escapeHTML(String(b.appointment_time).slice(0,5)):"Dia inteiro"} ${b.reason?"("+escapeHTML(b.reason)+")":""}<div class="actions"><button class="mutedbtn" data-unblock="${b.id}">Desbloquear</button></div></div>`).join("")||"Nenhum bloqueio.";
-    $("blocks").querySelectorAll("[data-unblock]").forEach(btn=>btn.onclick=async()=>{if(!confirm("Deseja remover este bloqueio?"))return;const {error}=await db.from("blocked_slots").delete().eq("id",btn.dataset.unblock);if(error)alert(error.message);else await loadBlocks();});
+    const {data,error}=await db.from("blocked_slots")
+      .select("id,appointment_date,appointment_time,reason")
+      .order("appointment_date");
+
+    if(error){
+      $("blocks").textContent="Erro ao carregar bloqueios.";
+      return;
+    }
+
+    $("blocks").innerHTML=(data||[]).map(b=>`
+      <div class="rowitem">
+        ${escapeHTML(b.appointment_date)} —
+        ${b.appointment_time?escapeHTML(String(b.appointment_time).slice(0,5)):"Dia inteiro"}
+        ${b.reason?"("+escapeHTML(b.reason)+")":""}
+        <div class="actions">
+          <button class="mutedbtn" data-unblock="${b.id}">Desbloquear</button>
+        </div>
+      </div>`).join("")||"Nenhum bloqueio.";
+
+    $("blocks").querySelectorAll("[data-unblock]").forEach(btn=>{
+      btn.onclick=async()=>{
+        if(!confirm("Deseja remover este bloqueio?"))return;
+        const {error}=await db.from("blocked_slots")
+          .delete().eq("id",btn.dataset.unblock);
+        if(error)alert(error.message);
+        else await loadBlocks();
+      };
+    });
   }
+
   $("showBlocksBtn").onclick=loadBlocks;
+
   async function loadAdminServices(){
-    const {data,error}=await db.from("services").select("id,name,price,price_note,is_active").order("name");
-    if(error){$("servicesAdmin").textContent="Erro ao carregar serviços.";return;}
-    $("servicesAdmin").innerHTML=(data||[]).map(s=>`<div class="rowitem"><strong>${escapeHTML(s.name)}</strong> <span class="pill">${s.is_active?"Ativo":"Inativo"}</span><div class="grid"><div><label>Preço (R$)</label><input type="number" min="0" step="0.01" id="price-${s.id}" value="${Number(s.price)}"></div><div><label>Tipo</label><select id="note-${s.id}"><option value="fixed" ${s.price_note==="fixed"?"selected":""}>Preço fixo</option><option value="starting" ${s.price_note==="starting"?"selected":""}>A partir de</option></select></div></div><div class="actions"><button class="gold" data-save="${s.id}">Salvar preço</button><button class="mutedbtn" data-active="${s.id}" data-value="${!s.is_active}">${s.is_active?"Desativar":"Ativar"}</button></div></div>`).join("");
-    $("servicesAdmin").querySelectorAll("[data-save]").forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.save;const price=Number($("price-"+id).value);if(!Number.isFinite(price)||price<0){alert("Informe um preço válido.");return;}const {error}=await db.from("services").update({price,price_note:$("note-"+id).value}).eq("id",id);if(error)alert(error.message);else{setMessage("serviceAdminMessage","Preço atualizado.","success");await loadAdminServices();}});
-    $("servicesAdmin").querySelectorAll("[data-active]").forEach(btn=>btn.onclick=async()=>{const {error}=await db.from("services").update({is_active:btn.dataset.value==="true"}).eq("id",btn.dataset.active);if(error)alert(error.message);else await Promise.all([loadAdminServices(),loadServices()]);});
+    const {data,error}=await db.from("services")
+      .select("id,name,price,price_note,is_active").order("name");
+
+    if(error){
+      $("servicesAdmin").textContent="Erro ao carregar serviços.";
+      return;
+    }
+
+    $("servicesAdmin").innerHTML=(data||[]).map(s=>`
+      <div class="rowitem">
+        <strong>${escapeHTML(s.name)}</strong>
+        <span class="pill">${s.is_active?"Ativo":"Inativo"}</span>
+        <div class="grid">
+          <div>
+            <label>Preço (R$)</label>
+            <input type="number" min="0" step="0.01" id="price-${s.id}" value="${Number(s.price)}">
+          </div>
+          <div>
+            <label>Tipo</label>
+            <select id="note-${s.id}">
+              <option value="fixed" ${s.price_note==="fixed"?"selected":""}>Preço fixo</option>
+              <option value="starting" ${s.price_note==="starting"?"selected":""}>A partir de</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="gold" data-save="${s.id}">Salvar preço</button>
+          <button class="mutedbtn" data-active="${s.id}" data-value="${!s.is_active}">
+            ${s.is_active?"Desativar":"Ativar"}
+          </button>
+        </div>
+      </div>`).join("");
+
+    $("servicesAdmin").querySelectorAll("[data-save]").forEach(btn=>{
+      btn.onclick=async()=>{
+        const id=btn.dataset.save;
+        const price=Number($("price-"+id).value);
+        if(!Number.isFinite(price)||price<0){
+          alert("Informe um preço válido.");
+          return;
+        }
+        const {error}=await db.from("services")
+          .update({price,price_note:$("note-"+id).value}).eq("id",id);
+        if(error)alert(error.message);
+        else{
+          setMessage("serviceAdminMessage","Preço atualizado.","success");
+          await loadAdminServices();
+        }
+      };
+    });
+
+    $("servicesAdmin").querySelectorAll("[data-active]").forEach(btn=>{
+      btn.onclick=async()=>{
+        const {error}=await db.from("services")
+          .update({is_active:btn.dataset.value==="true"}).eq("id",btn.dataset.active);
+        if(error)alert(error.message);
+        else await Promise.all([loadAdminServices(),loadServices()]);
+      };
+    });
   }
+
   $("addServiceBtn").onclick=async()=>{
-    const name=$("newServiceName").value.trim(),price=Number($("newServicePrice").value);
-    if(!name||!Number.isFinite(price)||price<0){setMessage("serviceAdminMessage","Informe nome e preço válidos.","error");return;}
-    const {error}=await db.from("services").insert({name,price,price_note:$("newServiceNote").value,is_active:true});
-    if(error){setMessage("serviceAdminMessage","Erro ao adicionar: "+error.message,"error");return;}
-    $("newServiceName").value="";$("newServicePrice").value="";setMessage("serviceAdminMessage","Serviço adicionado.","success");await Promise.all([loadAdminServices(),loadServices()]);
+    const name=$("newServiceName").value.trim();
+    const price=Number($("newServicePrice").value);
+    if(!name||!Number.isFinite(price)||price<0){
+      setMessage("serviceAdminMessage","Informe nome e preço válidos.","error");
+      return;
+    }
+    const {error}=await db.from("services").insert({
+      name,price,price_note:$("newServiceNote").value,is_active:true
+    });
+    if(error){
+      setMessage("serviceAdminMessage","Erro ao adicionar: "+error.message,"error");
+      return;
+    }
+    $("newServiceName").value="";
+    $("newServicePrice").value="";
+    setMessage("serviceAdminMessage","Serviço adicionado.","success");
+    await Promise.all([loadAdminServices(),loadServices()]);
   };
-  (async()=>{await loadServices();$("date").value=dateLocal();await loadTimes();const {data}=await db.auth.getSession();if(data.session){const {data:allowed}=await db.rpc("is_barbearia_admin");if(allowed){adminUser=data.session.user;showAdmin();await refreshAdmin();}}})();
+
+  (async()=>{
+    await loadServices();
+    $("date").value=dateLocal();
+    await loadTimes();
+    const {data}=await db.auth.getSession();
+    if(data.session){
+      const {data:allowed}=await db.rpc("is_barbearia_admin");
+      if(allowed){
+        adminUser=data.session.user;
+        showAdmin();
+        await refreshAdmin();
+      }
+    }
+  })();
 })();
 </script>
 </body>
