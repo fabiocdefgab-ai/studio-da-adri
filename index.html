@@ -177,7 +177,7 @@
   async function refreshAdmin(){await Promise.all([loadAppointments(),loadAdminServices(),loadBlocks()]);}
   async function loadAppointments(){
     $("appointments").textContent="Carregando...";
-    const {data,error}=await db.from("bookings").select("id,client_name,client_phone,appointment_date,appointment_time,notes,status,services(name,price,price_note),booking_services(service_name,price)").order("appointment_date",{ascending:true}).order("appointment_time",{ascending:true});
+  const {data,error}=await db.from("bookings").select("id,client_name,client_phone,appointment_date,appointment_time,notes,status,services(name,price,price_note)").order("appointment_date",{ascending:true}).order("appointment_time",{ascending:true});
     if(error){$("appointments").textContent="Erro ao carregar agendamentos: "+error.message;return;}
     if(!data?.length){$("appointments").textContent="Nenhum agendamento encontrado.";return;}
     $("appointments").innerHTML=data.map(b=>{
