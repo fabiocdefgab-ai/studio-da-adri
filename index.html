@@ -181,8 +181,7 @@
     if(error){$("appointments").textContent="Erro ao carregar agendamentos: "+error.message;return;}
     if(!data?.length){$("appointments").textContent="Nenhum agendamento encontrado.";return;}
     $("appointments").innerHTML=data.map(b=>{
-      const legacy=b.booking_services||[];
-      const services=legacy.length?legacy.map(s=>`${escapeHTML(s.service_name)} — ${money(s.price)}`).join("<br>"):(b.services?`${escapeHTML(b.services.name)} — ${b.services.price_note==="starting"?"A partir de ":""}${money(b.services.price)}`:"Serviço não informado");
+    const services=b.services?`${escapeHTML(b.services.name)} — ${b.services.price_note==="starting"?"A partir de ":""}${money(b.services.price)}`:"Serviço não informado";
       return `<div class="rowitem"><strong>${escapeHTML(b.client_name)}</strong> <span class="pill">${escapeHTML(b.status)}</span><br><small>${escapeHTML(b.appointment_date)} às ${escapeHTML(String(b.appointment_time).slice(0,5))}</small><br>${services}<br><small>WhatsApp: ${escapeHTML(b.client_phone)}${b.notes?"<br>Obs.: "+escapeHTML(b.notes):""}</small><div class="actions"><button class="gold" data-status="confirmed" data-id="${b.id}">Confirmar</button><button class="danger" data-status="cancelled" data-id="${b.id}">Cancelar</button></div></div>`;
     }).join("");
     $("appointments").querySelectorAll("button[data-status]").forEach(btn=>btn.onclick=async()=>{
