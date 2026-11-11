@@ -1,951 +1,225 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#080808">
-<title>Barbearia do Gaúcho</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#101010;color:#f5f5f5;font-family:Arial,sans-serif}
-header{background:#050505;color:#d6b36a;text-align:center;padding:30px 15px;border-bottom:2px solid #b99750}
-.logo{display:block;width:100%;max-width:280px;max-height:240px;object-fit:contain;margin:0 auto 15px}
-header h1{margin:10px 0;font-size:30px}
-header p{color:#d6b36a}
-main,#admin{max-width:650px;margin:25px auto;padding:24px;background:#1c1c1c;border:1px solid #9d7b3e;border-radius:14px}
-h2{text-align:center;color:#d6b36a;margin-top:0}
-label{display:block;margin-top:17px;font-weight:bold;color:#e5c77f}
-input,select,textarea{width:100%;padding:14px;margin-top:7px;background:#292929;color:white;border:1px solid #777;border-radius:8px;font-size:16px}
-input:focus,select:focus,textarea:focus{outline:2px solid #d6b36a}
-button{width:100%;padding:14px;margin-top:18px;background:#d6b36a;color:#111;border:0;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
-button:disabled{opacity:.5;cursor:not-allowed}
-.secundario{background:#333;color:#fff;border:1px solid #9d7b3e}
-.perigo{background:#7b2828;color:#fff}
-#mensagem,#adminMensagem,#mensagemBloqueio,#mensagemNovoServico{text-align:center;margin-top:18px;line-height:1.6;overflow-wrap:anywhere}
-#mensagem a{display:block;margin-top:15px;padding:13px;background:#176b3a;color:white;text-decoration:none;border-radius:8px;font-weight:bold}
-.intro{text-align:center;color:#ccc;font-size:14px;line-height:1.5}
-.booking,.service-edit,.blocked-edit{border:1px solid #66532f;border-radius:10px;padding:15px;margin-top:14px;background:#242424}
-.booking p,.blocked-edit p{margin:7px 0;overflow-wrap:anywhere}
-.status{color:#e5c77f;font-weight:bold}
-.acoes{display:flex;gap:8px}
-.acoes button{flex:1}
-.price-hint{font-size:13px;color:#d6b36a;margin-top:5px}
-.grupo-feriado{border:1px solid #9d7b3e;border-radius:10px;padding:15px;margin-top:16px;background:#202020}
-.lista-servicos{margin-top:10px}
-.item-servico{display:flex;align-items:center;gap:12px;padding:13px;margin-top:9px;background:#292929;border:1px solid #66532f;border-radius:9px}
-.item-servico input{width:22px;height:22px;margin:0;accent-color:#d6b36a;flex-shrink:0}
-.item-servico label{margin:0;flex:1;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;color:#fff}
-.item-servico small{color:#d6b36a;text-align:right}
-.total-pedido{margin-top:18px;padding:17px;border:1px solid #d6b36a;border-radius:10px;text-align:center;background:#242424}
-.total-pedido strong{display:block;color:#d6b36a;font-size:25px;margin-top:7px}
-@media(max-width:600px){
-main,#admin{margin:18px 12px;padding:20px}
-header h1{font-size:25px}
-.acoes{flex-direction:column;gap:0}
-.item-servico label{align-items:flex-start;flex-direction:column}
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090909">
+  <title>Barbearia do Gaúcho</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#090909;--panel:#151515;--gold:#d6ad55;--gold2:#f0d28a;--white:#f7f4ed;--muted:#aaa49a;--line:#34302a;--green:#168447;--red:#a83232}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--white);font-family:Montserrat,Arial,sans-serif;line-height:1.5}
+    .wrap{width:min(920px,92%);margin:auto}.hero{text-align:center;padding:34px 0 22px;background:radial-gradient(ellipse at top,#332713 0,transparent 58%)}
+    .logo{width:min(190px,48vw);height:auto;max-height:170px;object-fit:contain;border-radius:12px}.tag{color:var(--gold2);font-size:12px;letter-spacing:2px;text-transform:uppercase;margin:12px 0}
+    h1{font-size:clamp(25px,5vw,38px);margin:8px 0;color:var(--gold2)}h2{font-size:21px;color:var(--gold2);margin:0 0 16px}
+    .sub{color:var(--muted);font-size:14px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:22px;margin:18px 0}
+    label{display:block;font-size:13px;color:var(--gold2);margin:13px 0 6px}input,select,textarea{width:100%;padding:13px;border-radius:8px;border:1px solid #514735;background:#0c0c0c;color:white;font:inherit;font-size:14px}
+    textarea{min-height:75px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.price{border:1px solid #594727;border-radius:9px;padding:12px;margin-top:12px;color:var(--gold2);font-weight:700}
+    button,.button{border:0;border-radius:9px;padding:13px 17px;font:700 14px Montserrat;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+    .gold{background:linear-gradient(120deg,#b98b35,#f0d28a);color:#17120a;width:100%;margin-top:18px}.whats{background:#168447;color:#fff;width:100%;margin-top:12px}
+    .mutedbtn{background:#353535;color:#fff}.danger{background:#8d2929;color:#fff}.success{color:#8be0a9}.error{color:#ff9b9b}.notice{font-size:13px;color:var(--muted);margin-top:10px}
+    .hidden{display:none!important}.adminlink{display:block;text-align:center;color:#8c826f;font-size:12px;margin:25px 0 35px;text-decoration:underline;cursor:pointer}
+    .rowitem{padding:12px 0;border-bottom:1px solid var(--line)}.rowitem:last-child{border:0}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}.actions button{padding:9px 12px;font-size:12px}
+    .pill{font-size:11px;border:1px solid var(--line);padding:3px 8px;border-radius:20px;color:var(--gold2)}.adminsection{margin-top:22px}
+    @media(max-width:600px){.grid{grid-template-columns:1fr}.panel{padding:17px}}
+  </style>
 </head>
-
 <body>
-
-<header>
-<img class="logo" src="logo-barbearia-do-gaucho.jpg" alt="Logotipo da Barbearia do Gaúcho">
-<h1>Barbearia do Gaúcho</h1>
-<p>Tradição e qualidade desde 1998</p>
+<header class="hero">
+  <div class="wrap">
+    <img class="logo" src="logo-barbearia-do-gaucho.jpg" alt="Logo Barbearia do Gaúcho" onerror="this.style.display='none'">
+    <div class="tag">Tradição e qualidade desde 1998</div>
+    <h1>Barbearia do Gaúcho</h1>
+    <p class="sub">Agende seu horário de forma rápida e simples.</p>
+  </div>
 </header>
+<main class="wrap">
+  <section class="panel" id="bookingPanel">
+    <h2>Agendar horário</h2>
+    <form id="bookingForm">
+      <label for="clientName">Seu nome</label><input id="clientName" required maxlength="100" autocomplete="name" placeholder="Digite seu nome">
+      <label for="clientPhone">WhatsApp</label><input id="clientPhone" required maxlength="25" autocomplete="tel" placeholder="(00) 00000-0000">
+      <label for="service">Serviço</label><select id="service" required><option value="">Carregando serviços...</option></select>
+      <div class="price" id="servicePrice">Selecione um serviço para ver o preço.</div>
+      <div class="grid">
+        <div><label for="date">Data</label><input id="date" type="date" required></div>
+        <div><label for="time">Horário</label><select id="time" required><option value="">Escolha a data primeiro</option></select></div>
+      </div>
+      <label for="notes">Observações (opcional)</label><textarea id="notes" maxlength="500" placeholder="Alguma informação para o barbeiro?"></textarea>
+      <button class="gold" id="bookBtn" type="submit">Solicitar agendamento</button>
+      <p class="notice" id="bookingMessage" role="status"></p>
+    </form>
+    <div id="whatsArea" class="hidden">
+      <p class="success">Seu pedido foi registrado! Para avisar a barbearia e confirmar pelo WhatsApp, toque no botão abaixo e depois toque em Enviar no WhatsApp.</p>
+      <a id="whatsButton" class="button whats" target="_blank" rel="noopener">Avisar a barbearia pelo WhatsApp</a>
+    </div>
+  </section>
 
-<main>
-<h2>Agende seu horário</h2>
-<p class="intro">Segunda a sexta: 8h30 às 20h. Sábado: 8h às 17h. Domingo: fechado.</p>
-
-<form id="formulario">
-<label for="nome">Seu nome</label>
-<input id="nome" type="text" required maxlength="100" autocomplete="name" placeholder="Digite seu nome">
-
-<label for="telefone">Seu WhatsApp</label>
-<input id="telefone" type="tel" required maxlength="20" autocomplete="tel" placeholder="(00) 00000-0000">
-
-<label>Escolha um ou mais serviços</label>
-<p class="intro">Você pode selecionar vários serviços. O valor total será calculado automaticamente.</p>
-
-<div id="listaServicos" class="lista-servicos">
-Carregando serviços...
-</div>
-
-<div class="total-pedido">
-Total do pedido
-<strong id="totalPedido">R$ 0,00</strong>
-</div>
-
-<label for="data">Data</label>
-<input id="data" type="date" required>
-
-<label for="horario">Horário</label>
-<select id="horario" required>
-<option value="">Escolha a data primeiro</option>
-</select>
-
-<label for="observacoes">Observações (opcional)</label>
-<textarea id="observacoes" rows="3" maxlength="500" placeholder="Alguma observação?"></textarea>
-
-<button id="enviar" type="submit">Solicitar agendamento</button>
-</form>
-
-<div id="mensagem" role="status" aria-live="polite"></div>
+  <section class="panel hidden" id="adminPanel">
+    <h2>Área administrativa</h2>
+    <div id="loginArea">
+      <label for="adminEmail">E-mail</label><input id="adminEmail" type="email" autocomplete="username">
+      <label for="adminPassword">Senha</label><input id="adminPassword" type="password" autocomplete="current-password">
+      <button class="gold" id="loginBtn">Entrar</button><p id="loginMessage" class="notice"></p>
+    </div>
+    <div id="adminArea" class="hidden">
+      <div class="actions"><button class="mutedbtn" id="refreshBtn">Atualizar listas</button><button class="mutedbtn" id="logoutBtn">Sair</button></div>
+      <div class="adminsection"><h2>Agendamentos</h2><div id="appointments">Carregando...</div></div>
+      <div class="adminsection"><h2>Bloquear horário ou dia</h2>
+        <label for="blockDate">Data</label><input type="date" id="blockDate">
+        <label for="blockTime">Horário (deixe em branco para bloquear o dia todo)</label><select id="blockTime"><option value="">Dia inteiro</option></select>
+        <label for="blockReason">Motivo (opcional)</label><input id="blockReason" maxlength="150">
+        <div class="actions"><button class="gold" id="blockBtn">Bloquear</button><button class="mutedbtn" id="showBlocksBtn">Ver bloqueios</button></div><div id="blocks"></div>
+      </div>
+      <div class="adminsection"><h2>Serviços e preços</h2><div id="servicesAdmin"></div>
+        <label for="newServiceName">Novo serviço</label><input id="newServiceName" maxlength="80" placeholder="Nome do serviço">
+        <div class="grid"><div><label for="newServicePrice">Preço em reais</label><input id="newServicePrice" type="number" min="0" step="0.01"></div><div><label for="newServiceNote">Tipo de preço</label><select id="newServiceNote"><option value="fixed">Preço fixo</option><option value="starting">A partir de</option></select></div></div>
+        <button class="gold" id="addServiceBtn">Adicionar serviço</button><p id="serviceAdminMessage" class="notice"></p>
+      </div>
+    </div>
+  </section>
+  <a class="adminlink" id="adminToggle">Acesso administrativo</a>
 </main>
-
-<section id="admin">
-<h2>Área do administrador</h2>
-<p class="intro">Acesso restrito ao administrador da Barbearia do Gaúcho.</p>
-
-<form id="loginForm">
-<label for="adminEmail">E-mail</label>
-<input id="adminEmail" type="email" autocomplete="username" required placeholder="E-mail do administrador">
-
-<label for="adminSenha">Senha</label>
-<input id="adminSenha" type="password" autocomplete="current-password" required placeholder="Sua senha">
-
-<button id="entrarAdmin" type="submit">Entrar no painel</button>
-</form>
-
-<div id="adminMensagem" role="status" aria-live="polite"></div>
-
-<div id="painelAdmin" hidden>
-<h2>Preços dos serviços</h2>
-<p class="intro">Serviços com preço inicial aparecem como “A partir de”.</p>
-<div id="listaPrecos"></div>
-
-<h2 style="margin-top:28px">Cadastrar novo serviço</h2>
-<p class="intro">Adicione serviços e preços diretamente pelo painel administrativo.</p>
-
-<form id="novoServicoForm">
-<label for="novoServicoNome">Nome do serviço</label>
-<input id="novoServicoNome" type="text" maxlength="100" required placeholder="Ex.: Sobrancelha na navalha">
-
-<label for="novoServicoPreco">Preço em reais</label>
-<input id="novoServicoPreco" type="number" min="0.01" step="0.01" required placeholder="Ex.: 5">
-
-<label for="novoServicoTipo">Tipo de preço</label>
-<select id="novoServicoTipo" required>
-<option value="fixed">Preço fixo</option>
-<option value="starting">A partir de</option>
-</select>
-
-<button id="cadastrarServico" type="submit">Cadastrar serviço</button>
-</form>
-
-<div id="mensagemNovoServico" role="status" aria-live="polite"></div>
-
-<h2 style="margin-top:28px">Bloquear horários</h2>
-<p class="intro">Bloqueie um horário ou todos os horários de uma data. Agendamentos existentes não são cancelados.</p>
-
-<label for="dataBloqueio">Data</label>
-<input id="dataBloqueio" type="date">
-
-<label for="horaBloqueio">Horário (bloqueio individual)</label>
-<input id="horaBloqueio" type="time" step="1800">
-
-<label for="motivoBloqueio">Motivo (opcional)</label>
-<input id="motivoBloqueio" type="text" maxlength="100" placeholder="Ex.: Feriado ou folga">
-
-<button id="salvarBloqueio" type="button">Bloquear apenas este horário</button>
-
-<div class="grupo-feriado">
-<strong>Bloqueio de dia inteiro</strong>
-<p class="intro">Bloqueia todos os horários de atendimento da data escolhida.</p>
-<button id="bloquearDia" type="button">Bloquear todos os horários deste dia</button>
-<button id="liberarDia" class="secundario" type="button">Liberar todos os bloqueios desta data</button>
-</div>
-
-<div id="mensagemBloqueio" role="status" aria-live="polite"></div>
-<div id="listaBloqueios"></div>
-
-<h2 style="margin-top:28px">Agendamentos</h2>
-<button id="atualizarLista" class="secundario" type="button">Atualizar agendamentos</button>
-<div id="listaAgendamentos"></div>
-
-<button id="sairAdmin" class="secundario" type="button">Sair do painel</button>
-</div>
-</section>
-
-<footer style="text-align:center;color:#d6b36a;background:#050505;padding:25px 15px;font-size:14px;line-height:1.8;border-top:1px solid #9d7b3e">
-© 2026 Barbearia do Gaúcho<br>
-Tradição, estilo e qualidade desde 1998.<br>
-Atendimento mediante agendamento.
-</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL="https://wjfbrvjugbjtanznllyo.supabase.co";
-const SUPABASE_ANON_KEY="sb_publishable_9rPUVBkkXWRd1OpInHNJ4Q_hkSJGZJe";
-const WHATSAPP="5546999815786";
-
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-const $=id=>document.getElementById(id);
-
-const formulario=$("formulario");
-const data=$("data");
-const horario=$("horario");
-const mensagem=$("mensagem");
-const botao=$("enviar");
-const listaServicos=$("listaServicos");
-const totalPedido=$("totalPedido");
-
-let servicosDisponiveis=[];
-let consultaHorarios=0;
-
-function dataHojeLocal(){
-const d=new Date();
-return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
-}
-
-data.min=dataHojeLocal();
-
-function dinheiro(v){
-return Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-}
-
-function formatarPreco(v,tipo){
-const preco=dinheiro(v);
-return tipo==="starting"?"A partir de "+preco:preco;
-}
-
-function servicosSelecionados(){
-return [...listaServicos.querySelectorAll('input[type="checkbox"]:checked')]
-.map(c=>servicosDisponiveis.find(s=>String(s.id)===c.value))
-.filter(Boolean);
-}
-
-function atualizarTotal(){
-const selecionados=servicosSelecionados();
-const total=selecionados.reduce((s,i)=>s+Number(i.price),0);
-const estimado=selecionados.some(s=>s.price_note==="starting");
-totalPedido.textContent=dinheiro(total)+(estimado?" (estimado)":"");
-return {selecionados,total,estimado};
-}
-
-async function carregarServicos(){
-listaServicos.textContent="Carregando serviços...";
-
-const {data:lista,error}=await db
-.from("services")
-.select("id,name,price,price_note")
-.eq("is_active",true)
-.order("name");
-
-if(error){
-console.error(error);
-listaServicos.textContent="Não foi possível carregar os serviços.";
-return;
-}
-
-servicosDisponiveis=lista||[];
-listaServicos.replaceChildren();
-
-if(!servicosDisponiveis.length){
-listaServicos.textContent="Nenhum serviço disponível no momento.";
-return;
-}
-
-servicosDisponiveis.forEach(i=>{
-const linha=document.createElement("div");
-linha.className="item-servico";
-
-const check=document.createElement("input");
-check.type="checkbox";
-check.value=i.id;
-check.id="servico-"+i.id;
-check.addEventListener("change",atualizarTotal);
-
-const label=document.createElement("label");
-label.htmlFor=check.id;
-
-const nome=document.createElement("span");
-nome.textContent=i.name;
-
-const preco=document.createElement("small");
-preco.textContent=formatarPreco(i.price,i.price_note);
-
-label.append(nome,preco);
-linha.append(check,label);
-listaServicos.appendChild(linha);
-});
-
-atualizarTotal();
-}
-
-async function carregarHorarios(){
-const atual=++consultaHorarios;
-horario.innerHTML='<option value="">Selecione um horário</option>';
-
-if(!data.value)return;
-
-if(data.value<dataHojeLocal()){
-horario.innerHTML='<option value="">Escolha uma data válida</option>';
-return;
-}
-
-const dia=new Date(data.value+"T12:00:00").getDay();
-
-if(dia===0){
-horario.innerHTML='<option value="">Fechado aos domingos</option>';
-return;
-}
-
-const abertura=dia===6?480:510;
-const fechamento=dia===6?1020:1200;
-
-const {data:ocupados,error}=await db.rpc("horarios_ocupados",{p_data:data.value});
-
-if(atual!==consultaHorarios)return;
-
-if(error){
-console.error(error);
-horario.innerHTML='<option value="">Não foi possível consultar os horários</option>';
-return;
-}
-
-const indisponiveis=new Set((ocupados||[]).map(x=>String(x.horario).slice(0,5)));
-
-let qtd=0;
-
-for(let m=abertura;m<=fechamento;m+=30){
-const h=String(Math.floor(m/60)).padStart(2,"0");
-const mi=String(m%60).padStart(2,"0");
-const v=h+":"+mi;
-
-if(indisponiveis.has(v))continue;
-
-const o=document.createElement("option");
-o.value=v;
-o.textContent=v;
-horario.appendChild(o);
-qtd++;
-}
-
-if(!qtd){
-horario.innerHTML='<option value="">Não há horários disponíveis nesta data</option>';
-}
-}
-
-data.addEventListener("change",carregarHorarios);
-
-formulario.addEventListener("submit",async e=>{
-e.preventDefault();
-
-if(!formulario.reportValidity())return;
-
-if(data.value<dataHojeLocal()){
-mensagem.textContent="Escolha uma data de hoje ou futura.";
-return;
-}
-
-const {selecionados,total,estimado}=atualizarTotal();
-
-if(!selecionados.length){
-mensagem.textContent="Selecione pelo menos um serviço.";
-return;
-}
-
-if(!horario.value){
-mensagem.textContent="Selecione um horário.";
-return;
-}
-
-botao.disabled=true;
-mensagem.textContent="Enviando solicitação...";
-
-const nome=$("nome").value.trim();
-const telefone=$("telefone").value.trim();
-const obs=$("observacoes").value.trim();
-
-try{
-const primeiroServico=selecionados[0];
-
-const {data:agendamento,error}=await db
-.from("bookings")
-.insert({
-client_name:nome,
-client_phone:telefone,
-service_id:primeiroServico.id,
-appointment_date:data.value,
-appointment_time:horario.value,
-notes:obs,
-status:"pending"
-})
-.select("id")
-.single();
-
-if(error){
-console.error(error);
-
-if(error.code==="23505"){
-mensagem.textContent="Este horário acabou de ser reservado. Escolha outro.";
-await carregarHorarios();
-}else{
-mensagem.textContent="Não foi possível registrar a solicitação. Tente novamente.";
-}
-return;
-}
-
-const itens=selecionados.map(s=>({
-booking_id:agendamento.id,
-service_id:s.id,
-service_name:s.name,
-price:Number(s.price)
-}));
-
-const {error:erroItens}=await db
-.from("booking_services")
-.insert(itens);
-
-if(erroItens){
-console.error(erroItens);
-mensagem.textContent="O agendamento foi registrado, mas houve um problema ao salvar a lista de serviços. Entre em contato com a barbearia.";
-return;
-}
-
-const listaTexto=selecionados
-.map(s=>"• "+s.name+" — "+formatarPreco(s.price,s.price_note))
-.join("\n");
-
-const texto=encodeURIComponent(
-"Olá! Recebi uma nova solicitação de agendamento na Barbearia do Gaúcho.\n"+
-"Nome: "+nome+"\n"+
-"Telefone: "+telefone+"\n"+
-"Serviços:\n"+listaTexto+"\n"+
-"Total: "+dinheiro(total)+(estimado?" (estimado)":"")+"\n"+
-"Data: "+data.value+"\n"+
-"Horário: "+horario.value+"\n"+
-"Observações: "+(obs||"Nenhuma")
-);
-
-const a=document.createElement("a");
-a.href="https://wa.me/"+WHATSAPP+"?text="+texto;
-a.target="_blank";
-a.rel="noopener noreferrer";
-a.textContent="Avisar a Barbearia pelo WhatsApp";
-
-mensagem.textContent="Solicitação registrada com sucesso! Confira os serviços e envie os detalhes pelo WhatsApp.";
-mensagem.appendChild(a);
-
-formulario.reset();
-data.min=dataHojeLocal();
-horario.innerHTML='<option value="">Escolha a data primeiro</option>';
-atualizarTotal();
-
-}catch(err){
-console.error(err);
-mensagem.textContent="Erro de conexão. Verifique sua internet e tente novamente.";
-}finally{
-botao.disabled=false;
-}
-});
-
-// ADMINISTRAÇÃO
-const loginForm=$("loginForm");
-const adminMensagem=$("adminMensagem");
-const painelAdmin=$("painelAdmin");
-const listaAgendamentos=$("listaAgendamentos");
-const listaPrecos=$("listaPrecos");
-const listaBloqueios=$("listaBloqueios");
-
-function mostrarPainel(ok){
-loginForm.hidden=ok;
-painelAdmin.hidden=!ok;
-}
-
-function linha(c,l,v){
-const p=document.createElement("p");
-const b=document.createElement("strong");
-b.textContent=l+": ";
-p.append(b,document.createTextNode(v||"—"));
-c.appendChild(p);
-}
-
-// PREÇOS
-async function carregarPrecos(){
-listaPrecos.textContent="Carregando serviços...";
-
-const {data:itens,error}=await db
-.from("services")
-.select("id,name,price,price_note")
-.order("name");
-
-if(error){
-console.error(error);
-listaPrecos.textContent="Não foi possível carregar os preços.";
-return;
-}
-
-listaPrecos.replaceChildren();
-
-(itens||[]).forEach(i=>{
-const card=document.createElement("div");
-card.className="service-edit";
-
-const t=document.createElement("strong");
-t.textContent=i.name;
-
-const inp=document.createElement("input");
-inp.type="number";
-inp.min="0";
-inp.step="0.01";
-inp.value=Number(i.price||0).toFixed(2);
-inp.setAttribute("aria-label","Preço de "+i.name);
-
-const hint=document.createElement("div");
-hint.className="price-hint";
-hint.textContent=i.price_note==="starting"?
-"O site mostrará “A partir de” antes do preço.":"Preço fixo";
-
-const btn=document.createElement("button");
-btn.type="button";
-btn.textContent="Salvar preço";
-
-btn.addEventListener("click",async()=>{
-const valor=Number(inp.value);
-
-if(!Number.isFinite(valor)||valor<0){
-adminMensagem.textContent="Informe um preço válido.";
-return;
-}
-
-btn.disabled=true;
-
-const {error:err}=await db
-.from("services")
-.update({price:valor})
-.eq("id",i.id);
-
-btn.disabled=false;
-
-if(err){
-console.error(err);
-adminMensagem.textContent="Não foi possível salvar o preço.";
-return;
-}
-
-adminMensagem.textContent="Preço de "+i.name+" atualizado.";
-await carregarPrecos();
-await carregarServicos();
-});
-
-card.append(t,inp,hint,btn);
-listaPrecos.appendChild(card);
-});
-}
-
-// CADASTRAR NOVO SERVIÇO
-$("novoServicoForm").addEventListener("submit",async e=>{
-e.preventDefault();
-
-const nome=$("novoServicoNome").value.trim();
-const preco=Number($("novoServicoPreco").value);
-const tipo=$("novoServicoTipo").value;
-const botaoCadastro=$("cadastrarServico");
-const aviso=$("mensagemNovoServico");
-
-if(!nome||!Number.isFinite(preco)||preco<=0){
-aviso.textContent="Informe um nome e um preço válido.";
-return;
-}
-
-botaoCadastro.disabled=true;
-aviso.textContent="Verificando autorização...";
-
-try{
-const {data:ehAdmin,error:erroAdmin}=await db.rpc("is_barbearia_admin");
-
-if(erroAdmin||ehAdmin!==true){
-throw new Error("Apenas o administrador autorizado pode cadastrar serviços.");
-}
-
-const {data:existente,error:erroBusca}=await db
-.from("services")
-.select("id")
-.ilike("name",nome)
-.limit(1);
-
-if(erroBusca)throw erroBusca;
-
-if(existente?.length){
-aviso.textContent="Já existe um serviço com esse nome.";
-return;
-}
-
-aviso.textContent="Cadastrando serviço...";
-
-const {error}=await db.from("services").insert({
-name:nome,
-price:preco,
-price_note:tipo,
-is_active:true
-});
-
-if(error)throw error;
-
-aviso.textContent="Serviço cadastrado com sucesso!";
-$("novoServicoForm").reset();
-
-await carregarPrecos();
-await carregarServicos();
-
-}catch(err){
-console.error(err);
-aviso.textContent=err.message||"Não foi possível cadastrar. Confira as permissões.";
-}finally{
-botaoCadastro.disabled=false;
-}
-});
-// BLOQUEIOS DE HORÁRIOS
-
-async function carregarBloqueios(){
-listaBloqueios.textContent="Carregando bloqueios...";
-
-const {data:itens,error}=await db
-.from("blocked_slots")
-.select("*")
-.order("appointment_date")
-.order("appointment_time");
-
-if(error){
-console.error(error);
-listaBloqueios.textContent="Não foi possível carregar os bloqueios.";
-return;
-}
-
-listaBloqueios.replaceChildren();
-
-if(!itens?.length){
-listaBloqueios.textContent="Nenhum horário bloqueado.";
-return;
-}
-
-itens.forEach(item=>{
-const card=document.createElement("div");
-card.className="blocked-edit";
-
-linha(card,"Data",item.appointment_date);
-linha(card,"Horário",item.appointment_time?String(item.appointment_time).slice(0,5):"Dia inteiro");
-linha(card,"Motivo",item.reason||"Bloqueio administrativo");
-
-const btn=document.createElement("button");
-btn.type="button";
-btn.className="secundario";
-btn.textContent="Desbloquear";
-
-btn.addEventListener("click",async()=>{
-if(!confirm("Deseja desbloquear este horário?"))return;
-
-btn.disabled=true;
-
-const {error:err}=await db
-.from("blocked_slots")
-.delete()
-.eq("id",item.id);
-
-if(err){
-console.error(err);
-btn.disabled=false;
-$("mensagemBloqueio").textContent="Não foi possível desbloquear.";
-return;
-}
-
-$("mensagemBloqueio").textContent="Horário desbloqueado.";
-await carregarBloqueios();
-});
-
-card.appendChild(btn);
-listaBloqueios.appendChild(card);
-});
-}
-
-// BLOQUEAR UM HORÁRIO
-$("salvarBloqueio").addEventListener("click",async()=>{
-const dia=$("dataBloqueio").value;
-const hora=$("horaBloqueio").value;
-const motivo=$("motivoBloqueio").value.trim()||"Bloqueio administrativo";
-const aviso=$("mensagemBloqueio");
-
-if(!dia||!hora){
-aviso.textContent="Escolha a data e o horário.";
-return;
-}
-
-if(!/^([01]\d|2[0-3]):(00|30)$/.test(hora)){
-aviso.textContent="Escolha um horário válido, de 30 em 30 minutos.";
-return;
-}
-
-const btn=$("salvarBloqueio");
-btn.disabled=true;
-aviso.textContent="Registrando bloqueio...";
-
-const {error}=await db.from("blocked_slots").insert({
-appointment_date:dia,
-appointment_time:hora,
-reason:motivo
-});
-
-btn.disabled=false;
-
-if(error){
-console.error(error);
-aviso.textContent="Não foi possível bloquear. Confira se esse horário já está bloqueado.";
-return;
-}
-
-aviso.textContent="Horário bloqueado com sucesso.";
-$("horaBloqueio").value="";
-await carregarBloqueios();
-});
-
-// BLOQUEAR O DIA INTEIRO
-$("bloquearDia").addEventListener("click",async()=>{
-const dia=$("dataBloqueio").value;
-const aviso=$("mensagemBloqueio");
-const btn=$("bloquearDia");
-
-if(!dia){
-aviso.textContent="Escolha a data primeiro.";
-return;
-}
-
-btn.disabled=true;
-aviso.textContent="Registrando bloqueio do dia...";
-
-const {error}=await db.from("blocked_slots").insert({
-appointment_date:dia,
-appointment_time:null,
-reason:"Dia inteiro bloqueado"
-});
-
-btn.disabled=false;
-
-if(error){
-console.error(error);
-aviso.textContent="Não foi possível bloquear o dia. Confira se já existe um bloqueio.";
-return;
-}
-
-aviso.textContent="Dia bloqueado com sucesso.";
-await carregarBloqueios();
-});
-
-// LIBERAR SOMENTE OS BLOQUEIOS DA DATA ESCOLHIDA
-$("liberarDia").addEventListener("click",async()=>{
-const dia=$("dataBloqueio").value;
-const aviso=$("mensagemBloqueio");
-const btn=$("liberarDia");
-
-if(!dia){
-aviso.textContent="Escolha a data primeiro.";
-return;
-}
-
-if(!confirm("Deseja liberar todos os bloqueios da data "+dia+"?"))return;
-
-btn.disabled=true;
-aviso.textContent="Liberando bloqueios...";
-
-const {error}=await db
-.from("blocked_slots")
-.delete()
-.eq("appointment_date",dia);
-
-btn.disabled=false;
-
-if(error){
-console.error(error);
-aviso.textContent="Não foi possível liberar os bloqueios.";
-return;
-}
-
-aviso.textContent="Bloqueios da data "+dia+" liberados.";
-await carregarBloqueios();
-});
-
-// AGENDAMENTOS DO ADMINISTRADOR
-
-async function carregarAgendamentos(){
-listaAgendamentos.textContent="Carregando agendamentos...";
-
-const {data:itens,error}=await db
-.from("bookings")
-.select("id,client_name,client_phone,appointment_date,appointment_time,notes,status,services(name,price),booking_services(service_name,price)")
-.order("appointment_date",{ascending:true})
-.order("appointment_time",{ascending:true});
-
-if(error){
-console.error(error);
-listaAgendamentos.textContent="Não foi possível carregar os agendamentos.";
-return;
-}
-
-listaAgendamentos.replaceChildren();
-
-if(!itens?.length){
-listaAgendamentos.textContent="Nenhum agendamento encontrado.";
-return;
-}
-
-itens.forEach(r=>{
-const card=document.createElement("div");
-card.className="booking";
-
-linha(card,"Cliente",r.client_name);
-linha(card,"WhatsApp",r.client_phone);
-linha(card,"Data",r.appointment_date);
-linha(card,"Horário",String(r.appointment_time||"").slice(0,5));
-
-const titulo=document.createElement("p");
-const forte=document.createElement("strong");
-forte.textContent="Serviços:";
-titulo.appendChild(forte);
-card.appendChild(titulo);
-
-let total=0;
-
-if(r.booking_services?.length){
-r.booking_services.forEach(s=>{
-total+=Number(s.price);
-linha(card,s.service_name,dinheiro(s.price));
-});
-}else if(r.services){
-total=Number(r.services.price||0);
-linha(card,"Serviço",r.services.name);
-}else{
-linha(card,"Serviço","Não informado");
-}
-
-linha(card,"Total dos serviços",dinheiro(total));
-linha(card,"Observações",r.notes);
-linha(card,"Situação",r.status);
-
-const acoes=document.createElement("div");
-acoes.className="acoes";
-
-const confirmar=document.createElement("button");
-confirmar.type="button";
-confirmar.textContent="Confirmar";
-confirmar.addEventListener("click",()=>alterarStatus(r.id,"confirmed"));
-
-const cancelar=document.createElement("button");
-cancelar.type="button";
-cancelar.className="perigo";
-cancelar.textContent="Cancelar";
-cancelar.addEventListener("click",()=>alterarStatus(r.id,"cancelled"));
-
-acoes.append(confirmar,cancelar);
-card.appendChild(acoes);
-
-listaAgendamentos.appendChild(card);
-});
-}
-
-// ALTERAR SITUAÇÃO DO AGENDAMENTO
-
-async function alterarStatus(id,status){
-const {error}=await db
-.from("bookings")
-.update({status})
-.eq("id",id);
-
-if(error){
-console.error(error);
-adminMensagem.textContent="Não foi possível atualizar o agendamento.";
-return;
-}
-
-adminMensagem.textContent=status==="confirmed"?
-"Agendamento confirmado!":
-"Agendamento cancelado.";
-
-await carregarAgendamentos();
-}
-
-// LOGIN DO ADMINISTRADOR
-
-loginForm.addEventListener("submit",async e=>{
-e.preventDefault();
-
-const entrar=$("entrarAdmin");
-entrar.disabled=true;
-adminMensagem.textContent="Verificando acesso...";
-
-const email=$("adminEmail").value.trim();
-const senha=$("adminSenha").value;
-
-try{
-const {error}=await db.auth.signInWithPassword({
-email,
-password:senha
-});
-
-if(error){
-adminMensagem.textContent="E-mail ou senha incorretos.";
-return;
-}
-
-const {data:ehAdmin,error:erroAdmin}=await db.rpc("is_barbearia_admin");
-
-if(erroAdmin||ehAdmin!==true){
-await db.auth.signOut();
-adminMensagem.textContent="Este usuário não tem autorização de administrador.";
-return;
-}
-
-mostrarPainel(true);
-adminMensagem.textContent="Acesso autorizado.";
-
-await carregarAgendamentos();
-await carregarPrecos();
-await carregarBloqueios();
-
-}catch(err){
-console.error(err);
-adminMensagem.textContent="Erro ao verificar o acesso. Tente novamente.";
-}finally{
-entrar.disabled=false;
-}
-});
-
-// ATUALIZAR DADOS DO PAINEL
-
-$("atualizarLista").addEventListener("click",async()=>{
-const btn=$("atualizarLista");
-btn.disabled=true;
-
-await carregarAgendamentos();
-await carregarPrecos();
-await carregarBloqueios();
-
-btn.disabled=false;
-adminMensagem.textContent="Informações atualizadas.";
-});
-
-// SAIR DO PAINEL
-
-$("sairAdmin").addEventListener("click",async()=>{
-const {error}=await db.auth.signOut();
-
-if(error){
-console.error(error);
-adminMensagem.textContent="Não foi possível sair do painel.";
-return;
-}
-
-mostrarPainel(false);
-adminMensagem.textContent="Você saiu do painel administrativo.";
-});
-
-// INICIALIZAÇÃO
-
-mostrarPainel(false);
-carregarServicos();
-
+(() => {
+  const SUPABASE_URL = "https://wjfbrvjugbjtanznllyo.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_9rPUVBkkXWRd1OpInHNJ4Q_hkSJGZJe";
+  const WHATSAPP = "5546999815786";
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = id => document.getElementById(id);
+  let serviceList = [], adminUser = null;
+
+  const money = value => Number(value || 0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const dateLocal = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+  const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function setMessage(id,text,kind="notice"){ $(id).textContent=text; $(id).className=kind; }
+
+  function timesForDate(date){
+    if(!date) return [];
+    const day = new Date(date+"T12:00:00").getDay();
+    if(day===0) return [];
+    const start = day===6 ? 8*60 : 8*60+30;
+    const end = day===6 ? 17*60 : 20*60;
+    const result=[];
+    for(let m=start;m<end;m+=30) result.push(String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"));
+    return result;
+  }
+  async function loadServices(){
+    const {data,error}=await db.from("services").select("id,name,price,price_note,is_active").eq("is_active",true).order("name");
+    if(error){$("service").innerHTML='<option value="">Não foi possível carregar</option>';return;}
+    serviceList=data||[];
+    $("service").innerHTML='<option value="">Selecione o serviço</option>'+serviceList.map(s=>`<option value="${s.id}">${escapeHTML(s.name)}</option>`).join("");
+  }
+  $("service").addEventListener("change",()=>{
+    const s=serviceList.find(x=>String(x.id)===$("service").value);
+    $("servicePrice").textContent=s?(s.price_note==="starting"?"A partir de ":"")+money(s.price):"Selecione um serviço para ver o preço.";
+  });
+  async function loadTimes(){
+    const date=$("date").value, select=$("time");
+    select.innerHTML='<option value="">Carregando horários...</option>';
+    if(!date){select.innerHTML='<option value="">Escolha a data primeiro</option>';return;}
+    if(new Date(date+"T12:00:00").getDay()===0){select.innerHTML='<option value="">Fechado aos domingos</option>';return;}
+    const {data:busy,error}=await db.rpc("horarios_ocupados",{p_data:date});
+    if(error){select.innerHTML='<option value="">Erro ao consultar horários</option>';return;}
+    const occupied=new Set((busy||[]).map(x=>String(x.horario).slice(0,5)));
+    const {data:blocked}=await db.from("blocked_slots").select("appointment_time").eq("appointment_date",date);
+    const blockedTimes=new Set((blocked||[]).filter(x=>x.appointment_time).map(x=>String(x.appointment_time).slice(0,5)));
+    const dayBlocked=(blocked||[]).some(x=>!x.appointment_time);
+    const available=timesForDate(date).filter(t=>!occupied.has(t)&&!blockedTimes.has(t));
+    select.innerHTML=dayBlocked?'<option value="">Dia bloqueado</option>':available.length?'<option value="">Selecione o horário</option>'+available.map(t=>`<option value="${t}">${t}</option>`).join(""):'<option value="">Sem horários disponíveis</option>';
+  }
+  $("date").min=dateLocal(); $("date").addEventListener("change",loadTimes);
+
+  $("bookingForm").addEventListener("submit",async e=>{
+    e.preventDefault(); $("bookBtn").disabled=true; $("whatsArea").classList.add("hidden"); setMessage("bookingMessage","Registrando seu pedido...");
+    const service=serviceList.find(x=>String(x.id)===$("service").value);
+    if(!service){setMessage("bookingMessage","Selecione um serviço válido.","error");$("bookBtn").disabled=false;return;}
+    const date=$("date").value,time=$("time").value;
+    if(!date||!time){setMessage("bookingMessage","Escolha a data e o horário.","error");$("bookBtn").disabled=false;return;}
+    const payload={client_name:$("clientName").value.trim(),client_phone:$("clientPhone").value.trim(),service_id:service.id,appointment_date:date,appointment_time:time,notes:$("notes").value.trim(),status:"pending"};
+    const {data,error}=await db.from("bookings").insert(payload).select("id").single();
+    $("bookBtn").disabled=false;
+    if(error){setMessage("bookingMessage","Não foi possível registrar. Confira os dados e tente novamente. ("+error.message+")","error");return;}
+    const priceText=(service.price_note==="starting"?"A partir de ":"")+money(service.price);
+    const message=[
+      "Olá! Fiz um pedido de agendamento na Barbearia do Gaúcho.",
+      "Nome: "+payload.client_name,
+      "Meu WhatsApp: "+payload.client_phone,
+      "Serviço: "+service.name,
+      "Preço informado: "+priceText,
+      "Data: "+date.split("-").reverse().join("/"),
+      "Horário: "+time,
+      payload.notes?"Observações: "+payload.notes:"",
+      "Código do pedido: "+data.id
+    ].filter(Boolean).join("\n");
+    $("whatsButton").href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent(message);
+    $("whatsArea").classList.remove("hidden");
+    $("bookingForm").reset(); $("servicePrice").textContent="Selecione um serviço para ver o preço."; $("time").innerHTML='<option value="">Escolha a data primeiro</option>';
+    setMessage("bookingMessage","Pedido registrado com sucesso!","success");
+  });
+
+  $("adminToggle").onclick=()=>{$("adminPanel").classList.toggle("hidden");$("adminPanel").scrollIntoView({behavior:"smooth"});};
+  $("loginBtn").onclick=async()=>{
+    setMessage("loginMessage","Verificando acesso...");
+    const {data,error}=await db.auth.signInWithPassword({email:$("adminEmail").value,password:$("adminPassword").value});
+    if(error){setMessage("loginMessage","Não foi possível entrar. Confira e-mail e senha.","error");return;}
+    const {data:allowed,error:rpcError}=await db.rpc("is_barbearia_admin");
+    if(rpcError||!allowed){await db.auth.signOut();setMessage("loginMessage","Este usuário não tem permissão administrativa.","error");return;}
+    adminUser=data.user; showAdmin(); await refreshAdmin();
+  };
+  function showAdmin(){ $("loginArea").classList.add("hidden");$("adminArea").classList.remove("hidden"); }
+  $("logoutBtn").onclick=async()=>{await db.auth.signOut();adminUser=null;$("adminArea").classList.add("hidden");$("loginArea").classList.remove("hidden");};
+  $("refreshBtn").onclick=refreshAdmin;
+
+  async function refreshAdmin(){await Promise.all([loadAppointments(),loadAdminServices(),loadBlocks()]);}
+  async function loadAppointments(){
+    $("appointments").textContent="Carregando...";
+    const {data,error}=await db.from("bookings").select("id,client_name,client_phone,appointment_date,appointment_time,notes,status,services(name,price,price_note),booking_services(service_name,price)").order("appointment_date",{ascending:true}).order("appointment_time",{ascending:true});
+    if(error){$("appointments").textContent="Erro ao carregar agendamentos: "+error.message;return;}
+    if(!data?.length){$("appointments").textContent="Nenhum agendamento encontrado.";return;}
+    $("appointments").innerHTML=data.map(b=>{
+      const legacy=b.booking_services||[];
+      const services=legacy.length?legacy.map(s=>`${escapeHTML(s.service_name)} — ${money(s.price)}`).join("<br>"):(b.services?`${escapeHTML(b.services.name)} — ${b.services.price_note==="starting"?"A partir de ":""}${money(b.services.price)}`:"Serviço não informado");
+      return `<div class="rowitem"><strong>${escapeHTML(b.client_name)}</strong> <span class="pill">${escapeHTML(b.status)}</span><br><small>${escapeHTML(b.appointment_date)} às ${escapeHTML(String(b.appointment_time).slice(0,5))}</small><br>${services}<br><small>WhatsApp: ${escapeHTML(b.client_phone)}${b.notes?"<br>Obs.: "+escapeHTML(b.notes):""}</small><div class="actions"><button class="gold" data-status="confirmed" data-id="${b.id}">Confirmar</button><button class="danger" data-status="cancelled" data-id="${b.id}">Cancelar</button></div></div>`;
+    }).join("");
+    $("appointments").querySelectorAll("button[data-status]").forEach(btn=>btn.onclick=async()=>{
+      const {error}=await db.from("bookings").update({status:btn.dataset.status}).eq("id",btn.dataset.id);
+      if(error)alert("Não foi possível atualizar: "+error.message);else await loadAppointments();
+    });
+  }
+  function adminTimes(){return ["",...timesForDate($("blockDate").value)];}
+  $("blockDate").addEventListener("change",()=>{$("blockTime").innerHTML=adminTimes().map(t=>`<option value="${t}">${t||"Dia inteiro"}</option>`).join("");});
+  $("blockBtn").onclick=async()=>{
+    const date=$("blockDate").value;if(!date){alert("Escolha uma data.");return;}
+    const {error}=await db.from("blocked_slots").insert({appointment_date:date,appointment_time:$("blockTime").value||null,reason:$("blockReason").value.trim()||null});
+    if(error){alert("Não foi possível bloquear: "+error.message);return;}await loadBlocks();alert("Bloqueio registrado.");
+  };
+  async function loadBlocks(){
+    const {data,error}=await db.from("blocked_slots").select("id,appointment_date,appointment_time,reason").order("appointment_date");
+    if(error){$("blocks").textContent="Erro ao carregar bloqueios.";return;}
+    $("blocks").innerHTML=(data||[]).map(b=>`<div class="rowitem">${escapeHTML(b.appointment_date)} — ${b.appointment_time?escapeHTML(String(b.appointment_time).slice(0,5)):"Dia inteiro"} ${b.reason?"("+escapeHTML(b.reason)+")":""}<div class="actions"><button class="mutedbtn" data-unblock="${b.id}">Desbloquear</button></div></div>`).join("")||"Nenhum bloqueio.";
+    $("blocks").querySelectorAll("[data-unblock]").forEach(btn=>btn.onclick=async()=>{if(!confirm("Deseja remover este bloqueio?"))return;const {error}=await db.from("blocked_slots").delete().eq("id",btn.dataset.unblock);if(error)alert(error.message);else await loadBlocks();});
+  }
+  $("showBlocksBtn").onclick=loadBlocks;
+  async function loadAdminServices(){
+    const {data,error}=await db.from("services").select("id,name,price,price_note,is_active").order("name");
+    if(error){$("servicesAdmin").textContent="Erro ao carregar serviços.";return;}
+    $("servicesAdmin").innerHTML=(data||[]).map(s=>`<div class="rowitem"><strong>${escapeHTML(s.name)}</strong> <span class="pill">${s.is_active?"Ativo":"Inativo"}</span><div class="grid"><div><label>Preço (R$)</label><input type="number" min="0" step="0.01" id="price-${s.id}" value="${Number(s.price)}"></div><div><label>Tipo</label><select id="note-${s.id}"><option value="fixed" ${s.price_note==="fixed"?"selected":""}>Preço fixo</option><option value="starting" ${s.price_note==="starting"?"selected":""}>A partir de</option></select></div></div><div class="actions"><button class="gold" data-save="${s.id}">Salvar preço</button><button class="mutedbtn" data-active="${s.id}" data-value="${!s.is_active}">${s.is_active?"Desativar":"Ativar"}</button></div></div>`).join("");
+    $("servicesAdmin").querySelectorAll("[data-save]").forEach(btn=>btn.onclick=async()=>{const id=btn.dataset.save;const price=Number($("price-"+id).value);if(!Number.isFinite(price)||price<0){alert("Informe um preço válido.");return;}const {error}=await db.from("services").update({price,price_note:$("note-"+id).value}).eq("id",id);if(error)alert(error.message);else{setMessage("serviceAdminMessage","Preço atualizado.","success");await loadAdminServices();}});
+    $("servicesAdmin").querySelectorAll("[data-active]").forEach(btn=>btn.onclick=async()=>{const {error}=await db.from("services").update({is_active:btn.dataset.value==="true"}).eq("id",btn.dataset.active);if(error)alert(error.message);else await Promise.all([loadAdminServices(),loadServices()]);});
+  }
+  $("addServiceBtn").onclick=async()=>{
+    const name=$("newServiceName").value.trim(),price=Number($("newServicePrice").value);
+    if(!name||!Number.isFinite(price)||price<0){setMessage("serviceAdminMessage","Informe nome e preço válidos.","error");return;}
+    const {error}=await db.from("services").insert({name,price,price_note:$("newServiceNote").value,is_active:true});
+    if(error){setMessage("serviceAdminMessage","Erro ao adicionar: "+error.message,"error");return;}
+    $("newServiceName").value="";$("newServicePrice").value="";setMessage("serviceAdminMessage","Serviço adicionado.","success");await Promise.all([loadAdminServices(),loadServices()]);
+  };
+  (async()=>{await loadServices();$("date").value=dateLocal();await loadTimes();const {data}=await db.auth.getSession();if(data.session){const {data:allowed}=await db.rpc("is_barbearia_admin");if(allowed){adminUser=data.session.user;showAdmin();await refreshAdmin();}}})();
+})();
 </script>
 </body>
 </html>
